@@ -9,7 +9,17 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^1.16.2",
+    "@angular/build": "^19.2.13",
+    "@angular/compiler-cli": "^19.2.13",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@angular/common": "^19.2.13",
+    "@angular/core": "^19.2.13",
+    "@angular/platform-browser": "^19.2.13",
+    "@angular/router": "^19.2.13",
+    "less": "^4.3.0"
   }
 }
