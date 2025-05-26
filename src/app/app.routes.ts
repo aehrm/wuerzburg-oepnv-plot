@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { StartComponent } from './start/start.component';
+import { BuilderComponent } from './builder/builder.component';
 
 export const routes: Routes = [
-    {path: '', pathMatch: 'full', component: StartComponent}
+    {path: '', pathMatch: 'full', component: BuilderComponent}
 ];
