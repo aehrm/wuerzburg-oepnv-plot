@@ -1,65 +1,66 @@
 import { Component, inject, input, signal, effect } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
-import { ApiService, Product } from '../shared/tripApi.service';
-import { CartService } from '../shared/tripSelection.service';
+import { ApiService } from '../shared/tripApi.service';
+import { TripsEditorService } from '../shared/tripSelection.service';
+import {Stop, StopLocation, Trip} from "../shared/trip.model";
+import {DateTime} from "luxon";
 
 @Component({
-    selector: 'app-product-list',
-    standalone: true,
-    imports: [CurrencyPipe],
+    selector: 'trip-selector',
+    // standalone: true,
     template: `
-    <div>
-      <h2>Products in {{ categoryName() }}</h2>
-      
-      @if (loading()) {
-        <div>Loading products...</div>
-      } @else if (products().length) {
         <div>
-          @for (product of products(); track product.id) {
-            <div>
-              <h3>{{ product.name }}</h3>
-              <p>{{ product.description }}</p>
-              <p>{{ product.price | currency }}</p>
-              <button (click)="addToCart(product)">Add to Cart</button>
-            </div>
-          }
+            <h2>Stops at {{ stopLocation().name }}</h2>
+
+            @if (loading()) {
+                <div>Loading stops...</div>
+            } @else if (stops().length) {
+                <div>
+                    @for (stop of stops(); track [stop.trip.uuid, stop.tripIndex]) {
+                        <div>
+                            <p>{{ stop.trip.line.name }} (Code {{ stop.trip.tripCode }}) 
+                                nach {{ stop.trip.stops.at(-1)!.location.name }}
+                                (um {{ stop.departureTime }})</p>
+                            <button (click)="addTripToEditor(stop)">Add to Plot</button>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div>No products found in this category</div>
+            }
         </div>
-      } @else {
-        <div>No products found in this category</div>
-      }
-    </div>
-  `
+    `
 })
 export class ProductListComponent {
     private apiService = inject(ApiService);
-    private cartService = inject(CartService);
+    private editorService = inject(TripsEditorService);
 
-    categoryId = input.required<string>();
-    categoryName = input.required<string>();
+    stopLocation = input.required<StopLocation>();
 
-    products = signal<Product[]>([]);
+    stops = signal<Stop[]>([]);
     loading = signal<boolean>(false);
+    searchDate = signal<DateTime>(DateTime.fromISO("2025-05-13T00:00:00+0200"))
 
     constructor() {
         effect(() => {
-            this.loadProducts();
+            this.loadStops();
         });
     }
 
-    async loadProducts(): Promise<void> {
+    async loadStops(): Promise<void> {
         this.loading.set(true);
         try {
-            const products = await this.apiService.getProductsByCategory(this.categoryId());
-            this.products.set(products);
+            const stops = await this.apiService.getStopsAtLocation(this.stopLocation(), this.searchDate());
+            this.stops.set(stops);
         } catch (error) {
             console.error('Error loading products:', error);
-            this.products.set([]);
+            this.stops.set([]);
         } finally {
             this.loading.set(false);
         }
     }
 
-    addToCart(product: Product): void {
-        this.cartService.addToCart(product);
+    addTripToEditor(stop: Stop): void {
+        const selectedStopsOfTrip = [...Array(stop.trip.stops.length).keys()].filter(i => i >= stop.tripIndex)
+        this.editorService.addToTripsEditor(stop.trip, selectedStopsOfTrip);
     }
 }

@@ -1,18 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
-export interface Category {
-    id: string;
-    name: string;
+function assert(condition: any, msg?: string): asserts condition {
+    if (!condition) {
+        throw new Error(msg);
+    }
 }
 
-export interface Product {
-    id: string;
-    name: string;
-    price: number;
-    description: string;
-    category: string;
-}
+import {Trip, StopLocation, Line, Stop} from "./trip.model";
+import {DateTime} from "luxon";
+import {StopLocationSearchComponent} from "../locationsearch/locationsearch.component";
 
 @Injectable({
     providedIn: 'root'
@@ -20,59 +18,117 @@ export interface Product {
 export class ApiService {
     constructor(private http: HttpClient) {}
 
-    // For demo purposes, using mock data
-    private mockCategories: Category[] = [
-        { id: 'electronics', name: 'Electronics' },
-        { id: 'clothing', name: 'Clothing' },
-        { id: 'books', name: 'Books' },
-        { id: 'home', name: 'Home & Kitchen' },
-        { id: 'beauty', name: 'Beauty & Personal Care' }
-    ];
+    async searchStops(searchTerm: string): Promise<StopLocation[]> {
+        const baseUrl = 'https://bahnland-bayern.de/efa/XML_STOPFINDER_REQUEST';
+        const params = new URLSearchParams({
+            coordOutputFormat: 'WGS84[dd.ddddd]',
+            commonMacro: 'stopfinder',
+            trans_company: "wvv",
+            outputFormat: 'rapidJSON',
+            version: '10.6.14.22',
+            type_sf: 'any',
+            name_sf: searchTerm,
+        });
 
-    private mockProducts: { [key: string]: Product[] } = {
-        'electronics': [
-            { id: 'e1', name: 'Smartphone', price: 699.99, description: 'Latest model with great camera', category: 'electronics' },
-            { id: 'e2', name: 'Laptop', price: 1299.99, description: 'Powerful laptop for work and gaming', category: 'electronics' },
-            { id: 'e3', name: 'Headphones', price: 199.99, description: 'Noise-cancelling wireless headphones', category: 'electronics' }
-        ],
-        'clothing': [
-            { id: 'c1', name: 'T-shirt', price: 19.99, description: 'Cotton t-shirt in various colors', category: 'clothing' },
-            { id: 'c2', name: 'Jeans', price: 49.99, description: 'Classic fit jeans', category: 'clothing' },
-            { id: 'c3', name: 'Jacket', price: 89.99, description: 'Waterproof jacket for all seasons', category: 'clothing' }
-        ],
-        'books': [
-            { id: 'b1', name: 'Fiction Novel', price: 12.99, description: 'Bestselling fiction novel', category: 'books' },
-            { id: 'b2', name: 'Cookbook', price: 24.99, description: 'Recipes from around the world', category: 'books' },
-            { id: 'b3', name: 'Self-help Book', price: 15.99, description: 'Guide to personal development', category: 'books' }
-        ],
-        'home': [
-            { id: 'h1', name: 'Coffee Maker', price: 79.99, description: 'Programmable coffee maker', category: 'home' },
-            { id: 'h2', name: 'Blender', price: 59.99, description: 'High-speed blender for smoothies', category: 'home' },
-            { id: 'h3', name: 'Towel Set', price: 29.99, description: 'Luxury cotton towel set', category: 'home' }
-        ],
-        'beauty': [
-            { id: 'be1', name: 'Facial Cleanser', price: 14.99, description: 'Gentle facial cleanser', category: 'beauty' },
-            { id: 'be2', name: 'Moisturizer', price: 24.99, description: 'Hydrating facial moisturizer', category: 'beauty' },
-            { id: 'be3', name: 'Shampoo', price: 9.99, description: 'Volumizing shampoo', category: 'beauty' }
-        ]
-    };
+        const url = `${baseUrl}?${params.toString()}`;
+        const data = await lastValueFrom(this.http.get<any>(url, {responseType: 'json'}));
 
-    // In a real app, these would make HTTP calls instead of returning mock data
-    async searchCategories(searchTerm: string): Promise<Category[]> {
-        // Filter categories based on search term
-        return this.mockCategories.filter(
-            category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const locations: StopLocation[] = data.locations.filter((location: any) => {
+            return location.type === 'stop';
+        }).map((location: any): StopLocation => {
+            return {
+                name: location.name,
+                shortName: location.disassembledName,
+                id: location.id,
+            }
+        })
 
-        // Real API call would be:
-        // return this.http.get<Category[]>(`/api/categories?search=${searchTerm}`).toPromise();
+        return locations;
     }
 
-    async getProductsByCategory(categoryId: string): Promise<Product[]> {
-        // Get products for the selected category
-        return this.mockProducts[categoryId] || [];
+    async getStopsAtLocation(stopLocation: StopLocation, searchDate: DateTime): Promise<Stop[]> {
+        const baseUrl = 'https://bahnland-bayern.de/efa/XML_DM_REQUEST';
+        const params = new URLSearchParams({
+            coordOutputFormat: 'WGS84[dd.ddddd]',
+            deleteAssignedStops_dm: '1',
+            depType: 'stopEvents',
+            imparedOptionsActive: '1',
+            inclMOT_1: 'true',
+            inclMOT_2: 'true',
+            inclMOT_3: 'true',
+            inclMOT_4: 'true',
+            inclMOT_5: 'true',
+            inclMOT_6: 'true',
+            inclMOT_7: 'true',
+            inclMOT_8: 'true',
+            inclMOT_9: 'true',
+            inclMOT_10: 'true',
+            inclMOT_11: 'true',
+            inclMOT_13: 'true',
+            inclMOT_14: 'true',
+            inclMOT_15: 'true',
+            inclMOT_16: 'true',
+            inclMOT_17: 'true',
+            includeCompleteStopSeq: '1',
+            itOptionsActive: '1',
+            itdDateDayMonthYear: searchDate.toFormat("dd.MM.yyyy"),  // Added date parameter
+            itdDateTimeDepArr: 'dep',
+            itdTime: searchDate.toFormat("HH:MM"),                   // Added time parameter
+            limit: '2000',
+            mode: 'direct',
+            name_dm: stopLocation.id,
+            outputFormat: 'rapidJSON',
+            ptOptionsActive: '1',
+            type_dm: 'any',
+            useAllStops: '1',
+            version: '10.6.14.22'
+        });
 
-        // Real API call would be:
-        // return this.http.get<Product[]>(`/api/products?category=${categoryId}`).toPromise();
+        const url = `${baseUrl}?${params.toString()}`;
+        const response = await fetch(url)
+        const data = await response.json();
+
+        const getStopLocation = function(stopLocationObj: any): StopLocation {
+            if (stopLocationObj.type === "stop") {
+                return { name: stopLocationObj.name, shortName: stopLocationObj.disassembledName, id: stopLocationObj.id }
+            } else {
+                return getStopLocation(stopLocationObj.parent)
+            }
+        }
+
+        const toStop = function(loc: any, trip: Trip, tripIndex: number): Stop {
+            const stopLocation: StopLocation = getStopLocation(loc);
+            return {
+                location: stopLocation,
+                trip: trip,
+                tripIndex: tripIndex,
+                arrivalTime: loc.arrivalTimePlanned !== undefined ? DateTime.fromISO(loc.arrivalTimePlanned) : undefined,
+                departureTime: loc.departureTimePlanned !== undefined ? DateTime.fromISO(loc.departureTimePlanned) : undefined,
+            }
+        }
+
+        const stops: Stop[] = (<any[]>data.stopEvents).map((stopEvent: any) => {
+            assert(getStopLocation(stopEvent.location).id === stopLocation.id);
+            const line: Line = {id: stopEvent.transportation.id, name: stopEvent.transportation.name}
+            const trip: Trip = new Trip(line, stopEvent.transportation.properties.tripCode, stopEvent.transportation.description, [])
+            const mainTripIndex: number = stopEvent.previousLocations?.length ?? 0;
+
+            const mainStop: Stop = {
+                departureTime: DateTime.fromISO(stopEvent.departureTimePlanned),
+                arrivalTime: undefined,
+                location: stopLocation, trip: trip, tripIndex: mainTripIndex
+            }
+
+            const previousLocations: any[] = (<any[]|undefined>stopEvent.previousLocations) ?? [];
+            const onwardLocations: any[] = (<any[]|undefined>stopEvent.onwardLocations) ?? [];
+
+            const previousStops: Stop[] = previousLocations.map((locObj, i) => toStop(locObj, trip, i)).sort((a, b) => a.departureTime!.toMillis() - b.departureTime!.toMillis())
+            const onwardStops: Stop[] = onwardLocations.map((locObj, i) => toStop(locObj, trip, i + mainTripIndex + 1)).sort((a, b) => a.arrivalTime!.toMillis() - b.arrivalTime!.toMillis());
+            trip.stops = [...previousStops, mainStop, ...onwardStops];
+
+            return mainStop;
+        }).filter(stop => (stop.departureTime ?? stop.arrivalTime)! <= searchDate.plus({days: 1}));
+
+        return stops;
     }
 }

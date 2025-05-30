@@ -1,12 +1,17 @@
+import {DateTime} from "luxon";
+
 export interface StopLocation {
     name: string;
+    shortName: string;
     id: string;
 }
 
 export interface Stop {
     location: StopLocation;
-    departureTime: Date;
-    arrivalTime: Date;
+    departureTime?: DateTime;
+    arrivalTime?: DateTime;
+    trip: Trip;
+    tripIndex: number;
 }
 
 export interface Line {
@@ -14,9 +19,20 @@ export interface Line {
     name: string;
 }
 
-export interface Trip {
-    uuid: string;
-    line: Line;
-    tripCode: string;
-    stops: Stop[];
+export class Trip {
+
+    constructor(
+        public line: Line,
+        public tripCode: string,
+        public description: string,
+        public stops: Stop[]) {
+    }
+
+    getDepartureTime(stopLocation: StopLocation): DateTime | undefined {
+        return this.stops.find(stop => stop.location === stopLocation)?.departureTime;
+    }
+
+    get uuid(): string {
+        return this.line.id + ":" + this.tripCode;
+    }
 }
