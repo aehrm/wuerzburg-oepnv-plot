@@ -1,4 +1,4 @@
-import {Component, inject, input, signal, effect, computed} from '@angular/core';
+import {Component, inject, input, signal, effect, computed, model} from '@angular/core';
 import { ApiService } from '../shared/tripApi.service';
 import { TripsEditorService } from '../shared/tripSelection.service';
 import {Line, Stop, StopLocation, Trip} from "../shared/trip.model";
@@ -16,6 +16,7 @@ import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
                 <div>Loading stops...</div>
             } @else {
                 <div>
+                    <span>{{ startDate() }}</span>
                     @for (line of stops().keys(); track line.id) {
                         <h3>{{ line.name }}</h3>
                         @for (stop of stops().get(line); track $index) {
@@ -32,7 +33,7 @@ import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
         </div>
     `
 })
-export class ProductListComponent {
+export class TripSelectorComponent {
     private apiService = inject(ApiService);
     private editorService = inject(TripsEditorService);
 
@@ -40,7 +41,8 @@ export class ProductListComponent {
 
     stops = signal<Map<Line, Stop[]>>(new Map());
     loading = signal<boolean>(false);
-    searchDate = signal<DateTime>(DateTime.fromISO("2025-05-13T00:00:00+0200"))
+    startDate = model<DateTime>();
+    endDate = model<DateTime>();
 
     constructor() {
         effect(() => {
@@ -51,7 +53,10 @@ export class ProductListComponent {
     async loadStops(): Promise<void> {
         this.loading.set(true);
         try {
-            const stops = await this.apiService.getStopsAtLocation(this.stopLocation(), this.searchDate());
+            if (this.startDate() === undefined || this.endDate() === undefined) {
+                throw Error();
+            }
+            const stops = await this.apiService.getStopsAtLocation(this.stopLocation(), this.startDate()!, this.endDate()!);
 
             const idToLine: Map<string, Line> = new Map();
             const stopsGroupedByLine: Map<string, Stop[]> = new Map();

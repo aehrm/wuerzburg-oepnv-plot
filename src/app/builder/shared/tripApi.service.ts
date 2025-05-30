@@ -46,7 +46,7 @@ export class ApiService {
         return locations;
     }
 
-    async getStopsAtLocation(stopLocation: StopLocation, searchDate: DateTime): Promise<Stop[]> {
+    async getStopsAtLocation(stopLocation: StopLocation, startDate: DateTime, endDate: DateTime): Promise<Stop[]> {
         const baseUrl = 'https://bahnland-bayern.de/efa/XML_DM_REQUEST';
         const params = new URLSearchParams({
             coordOutputFormat: 'WGS84[dd.ddddd]',
@@ -71,9 +71,9 @@ export class ApiService {
             inclMOT_17: 'true',
             includeCompleteStopSeq: '1',
             itOptionsActive: '1',
-            itdDateDayMonthYear: searchDate.toFormat("dd.MM.yyyy"),  // Added date parameter
+            itdDateDayMonthYear: startDate.toFormat("dd.MM.yyyy"),  // Added date parameter
             itdDateTimeDepArr: 'dep',
-            itdTime: searchDate.toFormat("HH:MM"),                   // Added time parameter
+            itdTime: startDate.toFormat("HH:MM"),                   // Added time parameter
             limit: '2000',
             mode: 'direct',
             name_dm: stopLocation.id,
@@ -127,7 +127,7 @@ export class ApiService {
             trip.stops = [...previousStops, mainStop, ...onwardStops];
 
             return mainStop;
-        }).filter(stop => (stop.departureTime ?? stop.arrivalTime)! <= searchDate.plus({days: 1}));
+        }).filter(stop => (stop.departureTime ?? stop.arrivalTime)! <= endDate);
 
         return stops;
     }
