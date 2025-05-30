@@ -1,5 +1,5 @@
-import {Injectable, computed, signal, WritableSignal, Signal} from '@angular/core';
-import {Trip} from "./trip.model";
+import {computed, Injectable, signal, Signal, WritableSignal} from '@angular/core';
+import {Line, Trip} from "./trip.model";
 
 export interface TripToPlot {
     trip: Trip;
@@ -13,6 +13,8 @@ export class TripsEditorService {
     private tripsToPlot: WritableSignal<TripToPlot[]> = signal([]);
 
     readonly items: Signal<TripToPlot[]> = this.tripsToPlot.asReadonly();
+
+    readonly itemsGroupedByLine: Signal<Map<Line, TripToPlot[]>> = computed(() => this.computeItemsGroupedByLine());
 
     addToTripsEditor(trip: Trip, selectedStops?: number[]) {
         const currentItems = this.items();
@@ -44,5 +46,24 @@ export class TripsEditorService {
                 return tripToPlot;
             }
         }));
+    }
+
+    private computeItemsGroupedByLine(): Map<Line, TripToPlot[]> {
+        const items = this.items();
+
+        const lineToTrips: Map<string, TripToPlot[]> = new Map();
+        const idToLine = new Map<string, Line>();
+
+        for (const item of items) {
+            const lineID = item.trip.line.id;
+            idToLine.set(lineID, item.trip.line);
+            if (lineToTrips.has(lineID)) {
+                lineToTrips.get(lineID)!.push(item);
+            } else {
+                lineToTrips.set(lineID, [item]);
+            }
+        }
+
+        return new Map([...lineToTrips.entries()].map(x => [idToLine.get(x[0])!, x[1]]));
     }
 }

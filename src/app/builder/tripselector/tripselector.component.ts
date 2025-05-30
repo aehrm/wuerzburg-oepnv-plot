@@ -1,31 +1,33 @@
-import { Component, inject, input, signal, effect } from '@angular/core';
+import {Component, inject, input, signal, effect, computed} from '@angular/core';
 import { ApiService } from '../shared/tripApi.service';
 import { TripsEditorService } from '../shared/tripSelection.service';
-import {Stop, StopLocation, Trip} from "../shared/trip.model";
+import {Line, Stop, StopLocation, Trip} from "../shared/trip.model";
 import {DateTime} from "luxon";
+import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 
 @Component({
     selector: 'trip-selector',
-    // standalone: true,
+    imports: [LuxonDateTimeFormat],
     template: `
         <div>
             <h2>Stops at {{ stopLocation().name }}</h2>
 
             @if (loading()) {
                 <div>Loading stops...</div>
-            } @else if (stops().length) {
+            } @else {
                 <div>
-                    @for (stop of stops(); track [stop.trip.uuid, stop.tripIndex]) {
-                        <div>
-                            <p>{{ stop.trip.line.name }} (Code {{ stop.trip.tripCode }}) 
-                                nach {{ stop.trip.stops.at(-1)!.location.name }}
-                                (um {{ stop.departureTime }})</p>
-                            <button (click)="addTripToEditor(stop)">Add to Plot</button>
-                        </div>
+                    @for (line of stops().keys(); track line.id) {
+                        <h3>{{ line.name }}</h3>
+                        @for (stop of stops().get(line); track $index) {
+                            <div>
+                                <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
+                                    nach {{ stop.trip.stops.at(-1)!.location.name }}
+                                    <button (click)="addTripToEditor(stop)">Add to Plot</button>
+                                </p>
+                            </div>
+                        }
                     }
                 </div>
-            } @else {
-                <div>No products found in this category</div>
             }
         </div>
     `
@@ -36,7 +38,7 @@ export class ProductListComponent {
 
     stopLocation = input.required<StopLocation>();
 
-    stops = signal<Stop[]>([]);
+    stops = signal<Map<Line, Stop[]>>(new Map());
     loading = signal<boolean>(false);
     searchDate = signal<DateTime>(DateTime.fromISO("2025-05-13T00:00:00+0200"))
 
@@ -50,10 +52,23 @@ export class ProductListComponent {
         this.loading.set(true);
         try {
             const stops = await this.apiService.getStopsAtLocation(this.stopLocation(), this.searchDate());
-            this.stops.set(stops);
+
+            const idToLine: Map<string, Line> = new Map();
+            const stopsGroupedByLine: Map<string, Stop[]> = new Map();
+            for (const stop of stops) {
+                const lineID = stop.trip.line.id;
+                idToLine.set(lineID, stop.trip.line);
+                if (stopsGroupedByLine.has(lineID)) {
+                    stopsGroupedByLine.get(lineID)!.push(stop);
+                } else {
+                    stopsGroupedByLine.set(lineID, [stop]);
+                }
+            }
+
+            this.stops.set(new Map([...stopsGroupedByLine.entries()].map(x => [idToLine.get(x[0])!, x[1]])));
         } catch (error) {
             console.error('Error loading products:', error);
-            this.stops.set([]);
+            this.stops.set(new Map());
         } finally {
             this.loading.set(false);
         }

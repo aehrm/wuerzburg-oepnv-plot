@@ -28,10 +28,6 @@ export class Trip {
         public stops: Stop[]) {
     }
 
-    getDepartureTime(stopLocation: StopLocation): DateTime | undefined {
-        return this.stops.find(stop => stop.location === stopLocation)?.departureTime;
-    }
-
     get uuid(): string {
         return this.line.id + ":" + this.tripCode;
     }

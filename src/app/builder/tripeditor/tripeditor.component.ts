@@ -10,19 +10,16 @@ import { TripsEditorItem } from './tripseditoritem.component';
     template: `
         <div>
             <h2>Your Shopping Cart</h2>
-
-            @if (tripsEditorService.items()) {
-                <div>
-                    @for (item of tripsEditorService.items(); track item.trip.uuid) {
+            <div>
+                @for (line of tripsEditorService.itemsGroupedByLine().keys(); track line.id) {
+                    <h5>{{ line.name }}</h5>
+                    <div>
+                    @for (item of tripsEditorService.itemsGroupedByLine().get(line); track item.trip.uuid) {
                         <trips-editor-item [tripToPlot]="item" />
                     }
-                </div>
-            } @else {
-                <div>
-                    <p>Your cart is empty</p>
-                    <p>Start shopping to add items to your cart</p>
-                </div>
-            }
+                    </div>
+                }
+            </div>
         </div>
     `
 })
