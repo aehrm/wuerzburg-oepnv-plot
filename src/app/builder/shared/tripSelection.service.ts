@@ -66,4 +66,14 @@ export class TripsEditorService {
 
         return new Map([...lineToTrips.entries()].map(x => [idToLine.get(x[0])!, x[1]]));
     }
+
+    applyStops(selectedStops: number[], selectFn: (tripToPlot: TripToPlot) => boolean) {
+        this.tripsToPlot.update(items => items.map(tripToPlot => {
+            if (selectFn(tripToPlot)) {
+                return {...tripToPlot, selectedStops: selectedStops};
+            } else {
+                return tripToPlot;
+            }
+        }))
+    }
 }
