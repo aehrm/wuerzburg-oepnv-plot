@@ -4,10 +4,11 @@ import { TripsEditorService } from '../shared/tripSelection.service';
 import {Line, Stop, StopLocation, Trip} from "../shared/trip.model";
 import {DateTime} from "luxon";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
+import {CdkAccordionModule} from '@angular/cdk/accordion';
 
 @Component({
     selector: 'trip-selector',
-    imports: [LuxonDateTimeFormat],
+    imports: [LuxonDateTimeFormat, CdkAccordionModule],
     template: `
         <div>
             <h2>Stops at {{ stopLocation().name }}</h2>
@@ -16,17 +17,34 @@ import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
                 <div>Loading stops...</div>
             } @else {
                 <div>
-                    <span>{{ startDate() }}</span>
                     @for (line of stops().keys(); track line.id) {
-                        <h3>{{ line.name }}</h3>
-                        @for (stop of stops().get(line); track $index) {
-                            <div>
-                                <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
-                                    nach {{ stop.trip.stops.at(-1)!.location.name }}
-                                    <button (click)="addTripToEditor(stop)">Add to Plot</button>
-                                </p>
-                            </div>
-                        }
+                        <cdk-accordion-item #accordionItem="cdkAccordionItem" class="example-accordion-item">
+                            <button
+                                    class="example-accordion-item-header"
+                                    (click)="accordionItem.toggle()"
+                                    tabindex="0"
+                                    [attr.id]="'accordion-header-' + $index"
+                                    [attr.aria-expanded]="accordionItem.expanded"
+                                    [attr.aria-controls]="'accordion-body-' + $index"
+                                > {{ line.name }}
+                            </button>
+                            @if(accordionItem.expanded) {
+                                <div
+                                        class="example-accordion-item-body"
+                                        role="region"
+                                        [style.display]="accordionItem.expanded ? '' : 'none'"
+                                        [attr.id]="'accordion-body-' + $index"
+                                        [attr.aria-labelledby]="'accordion-header-' + $index"
+                                >
+                                @for (stop of stops().get(line); track $index) {
+                                    <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
+                                        nach {{ stop.trip.stops.at(-1)!.location.name }}
+                                        <button (click)="addTripToEditor(stop)">Add to Plot</button>
+                                    </p>
+                                }
+                                </div>
+                            }
+                        </cdk-accordion-item>
                     }
                 </div>
             }
