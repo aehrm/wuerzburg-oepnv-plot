@@ -99,6 +99,6 @@ export class TripSelectorComponent {
 
     addTripToEditor(stop: Stop): void {
         const selectedStopsOfTrip = [...Array(stop.trip.stops.length).keys()].filter(i => i >= stop.tripIndex)
-        this.editorService.addToTripsEditor(stop.trip, selectedStopsOfTrip);
+        this.editorService.addToTripsEditor(stop.trip, new Set(selectedStopsOfTrip));
     }
 }

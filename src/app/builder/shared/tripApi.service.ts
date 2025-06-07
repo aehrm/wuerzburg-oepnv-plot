@@ -10,7 +10,6 @@ function assert(condition: any, msg?: string): asserts condition {
 
 import {Trip, StopLocation, Line, Stop} from "./trip.model";
 import {DateTime} from "luxon";
-import {StopLocationSearchComponent} from "../locationsearch/locationsearch.component";
 
 @Injectable({
     providedIn: 'root'
@@ -110,7 +109,7 @@ export class ApiService {
         const stops: Stop[] = (<any[]>data.stopEvents).map((stopEvent: any) => {
             assert(getStopLocation(stopEvent.location).id === stopLocation.id);
             const line: Line = {id: stopEvent.transportation.id, name: stopEvent.transportation.name}
-            const trip: Trip = new Trip(line, stopEvent.transportation.properties.tripCode, stopEvent.transportation.description, [])
+            const trip: Trip = new Trip({line: line, tripCode: stopEvent.transportation.properties.tripCode, description: stopEvent.transportation.description});
             const mainTripIndex: number = stopEvent.previousLocations?.length ?? 0;
 
             const mainStop: Stop = {

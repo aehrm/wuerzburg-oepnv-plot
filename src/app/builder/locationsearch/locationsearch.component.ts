@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService  } from '../shared/tripApi.service';
 import { TripSelectorComponent } from '../tripselector/tripselector.component';
@@ -20,8 +20,8 @@ import { DateTime } from "luxon";
                         placeholder="Search for stops..."
                 />
                 von <input type="time" [(ngModel)]="startTime" (input)="onUpdateDates()" />
-                bis <input type="time" [(ngModel)]="endTime" (input)="onUpdateDates()" />;
-                Tag <input type="date" [(ngModel)]="searchDay" (input)="onUpdateDates()" />
+                bis <input type="time" [(ngModel)]="endTime" (change)="onUpdateDates()" />;
+                Tag <input type="date" [(ngModel)]="searchDay" (change)="onUpdateDates()" />
             </div>
 
             <div>
@@ -54,7 +54,7 @@ export class StopLocationSearchComponent {
     searchTerm = '';
     searchTimeout: any = null;
 
-    searchDay = '2025-05-13';
+    searchDay = ''; //signal('');
     startTime = '08:00';
     endTime = '18:00';
     stopLocations = signal<StopLocation[]>([]);
@@ -67,6 +67,7 @@ export class StopLocationSearchComponent {
 
     constructor() {
         this.onUpdateDates();
+        this.searchDay = DateTime.now().toFormat('yyyy-MM-dd');
     }
 
     onSearchInput(): void {

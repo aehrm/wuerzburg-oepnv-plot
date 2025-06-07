@@ -1,6 +1,7 @@
 import {Component, inject, input, model} from "@angular/core";
-import {TripsEditorService, TripToPlot} from "../shared/tripSelection.service";
+import {TripsEditorService} from "../shared/tripSelection.service";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
+import {TripToPlot} from "../shared/trip.model";
 
 @Component({
     selector: 'trips-editor-item',
@@ -8,11 +9,14 @@ import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
     template: `
         <div>
             <p>{{ tripToPlot().trip.line.name }} Code {{ tripToPlot().trip.tripCode }}</p>
-            <p><button (click)="applyStopsToAllTrips()" >Apply stops to all trips</button></p>
+            <p>
+                <button (click)="applyStopsToAllTrips()">Apply stops to all trips</button>
+            </p>
             <ul>
                 @for (stop of tripToPlot().trip.stops; track $index) {
-                    <li>{{ stop.location.shortName ?? stop.location.name }} {{ (stop.arrivalTime ?? stop.departureTime)! | dateTimeFormat: 'HH:mm'}}
-                        <input type="checkbox" [checked]="stopSelected($index)" (change)="changeSelected($index)"/></li>
+                    <li>{{ stop.location.shortName ?? stop.location.name }} {{ (stop.arrivalTime ?? stop.departureTime)! | dateTimeFormat: 'HH:mm' }}
+                        <input type="checkbox" [checked]="isStopSelected($index)" (change)="changeSelected($index)"/>
+                    </li>
                 }
             </ul>
         </div>
@@ -23,8 +27,8 @@ export class TripsEditorItem {
     tripsEditorService = inject(TripsEditorService);
 
 
-    stopSelected(idx: number): boolean {
-        return this.tripToPlot().selectedStops.some(i => idx === i);
+    isStopSelected(idx: number): boolean {
+        return this.tripToPlot().selectedStopIndices.has(idx);
     }
 
     changeSelected(idx: number) {
@@ -32,7 +36,7 @@ export class TripsEditorItem {
     }
 
     applyStopsToAllTrips() {
-        this.tripsEditorService.applyStops(this.tripToPlot().selectedStops,
+        this.tripsEditorService.applyStops(this.tripToPlot().selectedStopIndices,
             (tripToPlot: TripToPlot) => tripToPlot.trip.line.id === this.tripToPlot().trip.line.id);
     }
 }
