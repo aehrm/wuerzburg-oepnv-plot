@@ -68,6 +68,7 @@ export class StopLocationSearchComponent {
     constructor() {
         this.onUpdateDates();
         this.searchDay = DateTime.now().toFormat('yyyy-MM-dd');
+        this.onUpdateDates();
     }
 
     onSearchInput(): void {
