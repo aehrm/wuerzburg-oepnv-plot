@@ -86,6 +86,8 @@ export class TimetablePlotComponent implements OnInit {
             }
         }
 
+        this.dimensions.margin.top = this.dimensions.margin.bottom = Math.max(...[...locationLabels.values()].map(l => l.length)) * 10;
+
         const maxStopPos = d3.max(allLocationIds, i => this.stopPositions.get(i) ?? 0) ?? 0;
         Array.from(allLocationIds.values()).filter(i => !this.stopPositions.has(i)).forEach((i, idx) => {
             this.stopPositions.set(i, maxStopPos + 1 + idx);
@@ -190,13 +192,6 @@ export class TimetablePlotComponent implements OnInit {
                 .attr("dy", "0.35em")
                 .text(d => locationLabels.get(d)!)
                 .call(drag))
-
-        // const brush = d3.brush().on("start brush", (event) => {
-        //     this.brushExtent = event.selection;
-        //     console.log(this.brushExtent);
-        // });
-        //
-        // this.plotSelection.call(brush)
 
         return;
 

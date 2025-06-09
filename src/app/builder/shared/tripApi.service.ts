@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import haversine from 'haversine-distance'
 
 function assert(condition: any, msg?: string): asserts condition {
     if (!condition) {
@@ -34,7 +35,16 @@ export class ApiService {
 
         const locations: StopLocation[] = data.locations.filter((location: any) => {
             return location.type === 'stop';
-        }).map((location: any): StopLocation => {
+        }).filter((location: any) => {
+            return haversine({
+                "lat": location.coord[0],
+                "lon": location.coord[1],
+            }, {
+                "lat": 49.79405,
+                "lon": 9.930974,
+            }) < 8000;
+        })
+        .map((location: any): StopLocation => {
             return {
                 name: location.name,
                 shortName: location.disassembledName,
