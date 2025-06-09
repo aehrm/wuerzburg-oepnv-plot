@@ -2,7 +2,7 @@ import {DateTime} from "luxon";
 
 export interface StopLocation {
     name: string;
-    shortName: string;
+    shortName?: string;
     id: string;
 }
 
@@ -17,19 +17,19 @@ export interface Stop {
 export interface Line {
     id: string;
     name: string;
+    description: string;
+    destinationDesc: string;
 }
 
 export class Trip {
 
     line: Line;
     tripCode: string;
-    description: string;
     stops: Stop[];
 
-    constructor(params: { line: Line; tripCode: any; description: any; stops?: Stop[] }) {
+    constructor(params: { line: Line; tripCode: string; stops?: Stop[] }) {
         this.line = params.line;
         this.tripCode = params.tripCode;
-        this.description = params.description;
         this.stops = params.stops ?? [];
     }
 

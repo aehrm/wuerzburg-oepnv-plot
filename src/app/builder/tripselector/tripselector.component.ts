@@ -26,7 +26,7 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
                                     [attr.id]="'accordion-header-' + $index"
                                     [attr.aria-expanded]="accordionItem.expanded"
                                     [attr.aria-controls]="'accordion-body-' + $index"
-                                > {{ line.name }}
+                                > {{ line.name }} nach {{ line.destinationDesc }}
                             </button>
                             @if(accordionItem.expanded) {
                                 <div

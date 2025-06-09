@@ -108,8 +108,8 @@ export class ApiService {
 
         const stops: Stop[] = (<any[]>data.stopEvents).map((stopEvent: any) => {
             assert(getStopLocation(stopEvent.location).id === stopLocation.id);
-            const line: Line = {id: stopEvent.transportation.id, name: stopEvent.transportation.name}
-            const trip: Trip = new Trip({line: line, tripCode: stopEvent.transportation.properties.tripCode, description: stopEvent.transportation.description});
+            const line: Line = {id: stopEvent.transportation.id, name: stopEvent.transportation.name, description: stopEvent.transportation.description, destinationDesc: stopEvent.transportation.destination.name}
+            const trip: Trip = new Trip({line: line, tripCode: stopEvent.transportation.properties.tripCode});
             const mainTripIndex: number = stopEvent.previousLocations?.length ?? 0;
 
             const mainStop: Stop = {
@@ -126,7 +126,7 @@ export class ApiService {
             trip.stops = [...previousStops, mainStop, ...onwardStops];
 
             return mainStop;
-        }).filter(stop => (stop.departureTime ?? stop.arrivalTime)! <= endDate);
+        }).filter(stop => (stop.departureTime ?? endDate) <= endDate && (stop.arrivalTime ?? endDate) <= endDate);
 
         return stops;
     }
