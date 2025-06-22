@@ -15,9 +15,7 @@ import {CdkAccordionModule} from "@angular/cdk/accordion";
                             class="example-accordion-item-header"
                             (click)="accordionItem.toggle()"
                             tabindex="0"
-                            [attr.id]="'accordion-header-' + $index"
-                            [attr.aria-expanded]="accordionItem.expanded"
-                            [attr.aria-controls]="'accordion-body-' + $index"
+                            [id]="'accordion-header-' + $index"
                     > {{ line.name }}
                     </button>
                     @if(accordionItem.expanded) {
@@ -25,8 +23,7 @@ import {CdkAccordionModule} from "@angular/cdk/accordion";
                                 class="example-accordion-item-body"
                                 role="region"
                                 [style.display]="accordionItem.expanded ? '' : 'none'"
-                                [attr.id]="'accordion-body-' + $index"
-                                [attr.aria-labelledby]="'accordion-header-' + $index"
+                                [id]="'accordion-body-' + $index"
                         >
                             @for (item of tripsEditorService.itemsGroupedByLine().get(line); track item.trip.uuid) {
                                 <cdk-accordion-item #accordionItem2="cdkAccordionItem" class="example-accordion-item">
@@ -34,9 +31,7 @@ import {CdkAccordionModule} from "@angular/cdk/accordion";
                                             class="example-accordion-item-header"
                                             (click)="accordionItem2.toggle()"
                                             tabindex="0"
-                                            [attr.id]="'accordion-header-' + $index"
-                                            [attr.aria-expanded]="accordionItem2.expanded"
-                                            [attr.aria-controls]="'accordion-body-' + $index"
+                                            [id]="'accordion-header-' + $index"
                                     > {{ item.trip.line.name }} Code {{ item.trip.tripCode }}
                                     </button>
                                     @if(accordionItem2.expanded) {
@@ -44,8 +39,7 @@ import {CdkAccordionModule} from "@angular/cdk/accordion";
                                                 class="example-accordion-item-body"
                                                 role="region"
                                                 [style.display]="accordionItem2.expanded ? '' : 'none'"
-                                                [attr.id]="'accordion-body-' + $index"
-                                                [attr.aria-labelledby]="'accordion-header-' + $index"
+                                                [id]="'accordion-body-' + $index"
                                         >
                                             <trips-editor-item [tripToPlot]="item" />
                                         </div>

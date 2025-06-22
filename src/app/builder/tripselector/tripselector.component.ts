@@ -23,9 +23,7 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
                                     class="example-accordion-item-header"
                                     (click)="accordionItem.toggle()"
                                     tabindex="0"
-                                    [attr.id]="'accordion-header-' + $index"
-                                    [attr.aria-expanded]="accordionItem.expanded"
-                                    [attr.aria-controls]="'accordion-body-' + $index"
+                                    [id]="'accordion-header-' + $index"
                                 > {{ line.name }} nach {{ line.destinationDesc }}
                             </button>
                             @if(accordionItem.expanded) {
@@ -33,8 +31,7 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
                                         class="example-accordion-item-body"
                                         role="region"
                                         [style.display]="accordionItem.expanded ? '' : 'none'"
-                                        [attr.id]="'accordion-body-' + $index"
-                                        [attr.aria-labelledby]="'accordion-header-' + $index"
+                                        [id]="'accordion-body-' + $index"
                                 >
                                 @for (stop of stops().get(line); track $index) {
                                     <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
