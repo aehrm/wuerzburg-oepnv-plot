@@ -17,7 +17,7 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
                 <div>Loading stops...</div>
             } @else {
                 <div>
-                    @for (line of stops().keys(); track line.id) {
+                    @for (line of lines(); track line.id) {
                         <cdk-accordion-item #accordionItem="cdkAccordionItem" class="example-accordion-item">
                             <button
                                     class="example-accordion-item-header"
@@ -58,6 +58,9 @@ export class TripSelectorComponent {
     stopLocation = input.required<StopLocation>();
 
     stops = signal<Map<Line, Stop[]>>(new Map());
+    lines = computed(() => [...this.stops().keys()].sort((a, b) => {
+        return (a.name + a.destinationDesc).localeCompare((b.name + b.destinationDesc));
+    }));
     loading = signal<boolean>(false);
     startDate = model<DateTime>();
     endDate = model<DateTime>();
