@@ -38,7 +38,7 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
                                 >
                                 @for (stop of stops().get(line); track $index) {
                                     <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
-                                        nach {{ stop.trip.stops.at(-1)!.location.name }}
+                                        nach {{ stop.trip.stops.at(-1)!.location.shortName }}
                                         <button (click)="addTripToEditor(stop)">Add to Plot</button>
                                     </p>
                                 }
