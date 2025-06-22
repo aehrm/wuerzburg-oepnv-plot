@@ -11,7 +11,7 @@ export class TripsEditorService {
 
     readonly itemsGroupedByLine: Signal<Map<Line, TripToPlot[]>> = computed(() => this.computeItemsGroupedByLine());
 
-    addToTripsEditor(trip: Trip, selectedStopIndices?: Set<number>) {
+    addToTripsEditor(trip: Trip, selectedStopIndices?: Set<number>): void {
         const currentItems = this.items();
         const existingItem = currentItems.find(item => item.trip.uuid === trip.uuid);
 

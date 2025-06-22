@@ -98,7 +98,29 @@ export class TripSelectorComponent {
     }
 
     addTripToEditor(stop: Stop): void {
-        const selectedStopsOfTrip = [...Array(stop.trip.stops.length).keys()].filter(i => i >= stop.tripIndex)
-        this.editorService.addToTripsEditor(stop.trip, new Set(selectedStopsOfTrip));
+        const trip = stop.trip;
+        let selectedStopsOfTrip: Set<number>
+
+        const lineEquality = (x: Trip)=> {
+            if (x.line.id !== trip.line.id) {
+                return false;
+            }
+
+            if (x.stops.length !== trip.stops.length) {
+                return false;
+            }
+
+            return [...Array(x.stops.length).keys()]
+                .map((i: number): [Stop, Stop] => [x.stops[i], trip.stops[i]])
+                .every(([a, b]) => a.location.id == b.location.id)
+        }
+
+        const tripsOfSameLine = this.editorService.items().filter(x => lineEquality(x.trip));
+        if (tripsOfSameLine.length > 0) {
+            selectedStopsOfTrip = tripsOfSameLine[0].selectedStopIndices;
+        } else {
+            selectedStopsOfTrip = new Set([...Array(trip.stops.length).keys()].filter(i => i >= stop.tripIndex));
+        }
+        this.editorService.addToTripsEditor(trip, selectedStopsOfTrip);
     }
 }
