@@ -26,25 +26,7 @@ import {CdkAccordionModule} from "@angular/cdk/accordion";
                                 [id]="'accordion-body-' + $index"
                         >
                             @for (item of tripsEditorService.itemsGroupedByLine().get(line); track item.trip.uuid) {
-                                <cdk-accordion-item #accordionItem2="cdkAccordionItem" class="example-accordion-item">
-                                    <button
-                                            class="example-accordion-item-header"
-                                            (click)="accordionItem2.toggle()"
-                                            tabindex="0"
-                                            [id]="'accordion-header-' + $index"
-                                    > {{ item.trip.line.name }} Code {{ item.trip.tripCode }}
-                                    </button>
-                                    @if(accordionItem2.expanded) {
-                                        <div
-                                                class="example-accordion-item-body"
-                                                role="region"
-                                                [style.display]="accordionItem2.expanded ? '' : 'none'"
-                                                [id]="'accordion-body-' + $index"
-                                        >
-                                            <trips-editor-item [tripToPlot]="item" />
-                                        </div>
-                                    }
-                                </cdk-accordion-item>
+                                <trips-editor-item [tripToPlot]="item" />
                             }
                         </div>
                     }
