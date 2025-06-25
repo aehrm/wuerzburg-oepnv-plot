@@ -9,8 +9,6 @@ export class TripsEditorService {
 
     readonly items: Signal<TripToPlot[]> = this.tripsToPlot.asReadonly();
 
-    readonly itemsGroupedByLine: Signal<Map<Line, TripToPlot[]>> = computed(() => this.computeItemsGroupedByLine());
-
     addToTripsEditor(trip: Trip, selectedStopIndices?: Set<number>): void {
         const currentItems = this.items();
         const existingItem = currentItems.find(item => item.trip.uuid === trip.uuid);
@@ -41,25 +39,6 @@ export class TripsEditorService {
                 return tripToPlot;
             }
         }));
-    }
-
-    private computeItemsGroupedByLine(): Map<Line, TripToPlot[]> {
-        const items = this.items();
-
-        const lineToTrips: Map<string, TripToPlot[]> = new Map();
-        const idToLine = new Map<string, Line>();
-
-        for (const item of items) {
-            const lineID = item.trip.line.id;
-            idToLine.set(lineID, item.trip.line);
-            if (lineToTrips.has(lineID)) {
-                lineToTrips.get(lineID)!.push(item);
-            } else {
-                lineToTrips.set(lineID, [item]);
-            }
-        }
-
-        return new Map([...lineToTrips.entries()].map(x => [idToLine.get(x[0])!, x[1]]));
     }
 
     applyStops(selectedStopIndices: Set<number>, selectFn: (tripToPlot: TripToPlot) => boolean) {

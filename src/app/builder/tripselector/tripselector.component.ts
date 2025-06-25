@@ -1,14 +1,40 @@
-import {Component, inject, input, signal, effect, computed, model} from '@angular/core';
+import {
+    Component,
+    inject,
+    input,
+    signal,
+    effect,
+    computed,
+    model,
+    Signal,
+    contentChild,
+    viewChild
+} from '@angular/core';
 import { ApiService } from '../shared/tripApi.service';
 import { TripsEditorService } from '../shared/tripSelection.service';
 import {Line, Stop, StopLocation, Trip} from "../shared/trip.model";
 import {DateTime} from "luxon";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 import {CdkAccordionModule} from '@angular/cdk/accordion';
+import {GroupedTableComponent, TableGroup, TableItem} from "../shared/groupedtable.component";
+
+class TableStop implements TableItem {
+
+    stop: Stop;
+
+    constructor(stop: Stop) {
+        this.stop = stop;
+    }
+
+    get id(): string {
+        return this.stop.trip.uuid;
+    }
+
+}
 
 @Component({
     selector: 'trip-selector',
-    imports: [LuxonDateTimeFormat, CdkAccordionModule],
+    imports: [LuxonDateTimeFormat, CdkAccordionModule, GroupedTableComponent],
     template: `
         <div>
             <h2>Stops at {{ stopLocation().name }}</h2>
@@ -16,34 +42,36 @@ import {CdkAccordionModule} from '@angular/cdk/accordion';
             @if (loading()) {
                 <div>Loading stops...</div>
             } @else {
-                <div>
-                    @for (line of lines(); track line.id) {
-                        <cdk-accordion-item #accordionItem="cdkAccordionItem" class="example-accordion-item">
-                            <button
-                                    class="example-accordion-item-header"
-                                    (click)="accordionItem.toggle()"
-                                    tabindex="0"
-                                    [id]="'accordion-header-' + $index"
-                                > {{ line.name }} nach {{ line.destinationDesc }}
-                            </button>
-                            @if(accordionItem.expanded) {
-                                <div
-                                        class="example-accordion-item-body"
-                                        role="region"
-                                        [style.display]="accordionItem.expanded ? '' : 'none'"
-                                        [id]="'accordion-body-' + $index"
-                                >
-                                @for (stop of stops().get(line); track $index) {
-                                    <p> Nr. {{ stop.trip.tripCode }} um {{ stop.departureTime! | dateTimeFormat: 'HH:mm' }}
-                                        nach {{ stop.trip.stops.at(-1)!.location.shortName }}
-                                        <button (click)="addTripToEditor(stop)">Add to Plot</button>
-                                    </p>
-                                }
+                <app-grouped-table #groupedTable [groups]="tableGroups()" >
+                    <ng-template #headerTemplate>
+                        <div class="table-header">
+                            <div class="header-row">
+                                <div class="checkbox-column">
+                                    <input
+                                            type="checkbox"
+                                            [checked]="groupedTable.headerCheckboxState().checked"
+                                            [indeterminate]="groupedTable.headerCheckboxState().indeterminate"
+                                            (change)="groupedTable.toggleSelectAll($event)"
+                                            class="header-checkbox"
+                                    >
                                 </div>
-                            }
-                        </cdk-accordion-item>
-                    }
-                </div>
+                            </div>
+                            <button (click)="addSelectedTripsToEditor()">Add Selected to Plot</button>
+                        </div>
+                    </ng-template>
+                    
+                    <ng-template #groupHeaderTemplate let-group>
+                        {{ group.line.name }} nach {{ group.line.destinationDesc }}
+                    </ng-template>
+
+                    <ng-template #itemTemplate let-item>
+                        <div>
+                        Nr. {{ item.stop.trip.tripCode }} um {{ item.stop.departureTime! | dateTimeFormat: 'HH:mm' }}
+                            nach {{ item.stop.trip.stops.at(-1)!.location.shortName }}
+                            <button (click)="addTripToEditor(item.stop)">Add to Plot</button>
+                        </div>
+                    </ng-template>
+                </app-grouped-table>
             }
         </div>
     `
@@ -55,12 +83,24 @@ export class TripSelectorComponent {
     stopLocation = input.required<StopLocation>();
 
     stops = signal<Map<Line, Stop[]>>(new Map());
-    lines = computed(() => [...this.stops().keys()].sort((a, b) => {
-        return (a.name + a.destinationDesc).localeCompare((b.name + b.destinationDesc));
-    }));
+    tableGroups  = computed(() => {
+        return [...this.stops().entries()]
+            .sort(([a, ignore1], [b, ignore2]) => {
+                return (a.name + a.destinationDesc).localeCompare((b.name + b.destinationDesc));
+            })
+            .map(([line, stops]) => {
+                return {
+                    id: line.id,
+                    line: line,
+                    items: stops.map(s => new TableStop(s))
+                }
+            })
+    })
     loading = signal<boolean>(false);
     startDate = model<DateTime>();
     endDate = model<DateTime>();
+
+    groupedTable = viewChild.required(GroupedTableComponent<TableStop>);
 
     constructor() {
         effect(() => {
@@ -122,5 +162,13 @@ export class TripSelectorComponent {
             selectedStopsOfTrip = new Set([...Array(trip.stops.length).keys()].filter(i => i >= stop.tripIndex));
         }
         this.editorService.addToTripsEditor(trip, selectedStopsOfTrip);
+    }
+
+    addSelectedTripsToEditor(): void {
+        const selectedTrips = this.groupedTable().selectedItems();
+
+        for (const item of selectedTrips) {
+            this.addTripToEditor(item.stop);
+        }
     }
 }

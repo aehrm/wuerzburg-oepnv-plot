@@ -15,6 +15,7 @@ import {CdkAccordionItem} from "@angular/cdk/accordion";
                     tabindex="0"
             > {{ tripToPlot().trip.line.name }} Code {{ tripToPlot().trip.tripCode }}
             </button>
+            <button (click)="remove()">Delete</button>
             @if (accordionItem.expanded) {
                 <div
                         class="example-accordion-item-body"
@@ -44,7 +45,6 @@ export class TripsEditorItem {
     tripToPlot = input.required<TripToPlot>();
     tripsEditorService = inject(TripsEditorService);
 
-
     isStopSelected(idx: number): boolean {
         return this.tripToPlot().selectedStopIndices.has(idx);
     }
@@ -56,5 +56,9 @@ export class TripsEditorItem {
     applyStopsToAllTrips() {
         this.tripsEditorService.applyStops(this.tripToPlot().selectedStopIndices,
             (tripToPlot: TripToPlot) => tripToPlot.trip.line.id === this.tripToPlot().trip.line.id);
+    }
+
+    remove(): void {
+        this.tripsEditorService.remove(this.tripToPlot())
     }
 }
