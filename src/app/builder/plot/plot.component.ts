@@ -12,6 +12,7 @@ interface PlotStop {
 
 interface PlotTrip {
     tripUuid: string;
+    color: string;
     stops: PlotStop[];
 }
 
@@ -96,6 +97,7 @@ export class TimetablePlotComponent implements OnInit {
         for (const trip of tripsToPlot) {
             plotData.push({
                 tripUuid: trip.trip.uuid,
+                color: this.tripsEditorService.getLineColor(trip.trip.line),
                 stops: trip.selectedStops.map((stop: Stop): PlotStop => {
                     return {
                         locationPos: this.stopPositions.get(stop.location.id)!,
@@ -131,7 +133,7 @@ export class TimetablePlotComponent implements OnInit {
         trips.append('path')
             .attr('d', trip => line(trip.stops))
             .attr('fill', 'none')
-            .attr('stroke', 'black')
+            .attr('stroke', trip => trip.color)
 
         trips.append("g")
             .attr("stroke", "white")

@@ -1,4 +1,4 @@
-import {Component, inject, input, model} from "@angular/core";
+import {Component, computed, inject, input, model} from "@angular/core";
 import {TripsEditorService} from "../shared/tripSelection.service";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 import {TripToPlot} from "../shared/trip.model";

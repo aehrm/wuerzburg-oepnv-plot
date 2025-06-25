@@ -44,6 +44,7 @@ class TableTrip implements TableItem {
 
                 <ng-template #groupHeaderTemplate let-group>
                     {{ group.line.name }} nach {{ group.line.destinationDesc }}
+                    <input type="color" [value]="lineColor(group.line)" (change)="updateLineColor(group.line, $event)" />
                 </ng-template>
 
                 <ng-template #itemTemplate let-tableItem>
@@ -92,6 +93,15 @@ export class TripsEditor {
         for (const item of selectedItems) {
             this.tripsEditorService.remove(item.tripToPlot);
         }
+    }
+
+    lineColor(line: Line): string {
+        return this.tripsEditorService.getLineColor(line);
+    }
+
+    updateLineColor(line: Line, ev: Event) {
+        const color = (ev.target as HTMLInputElement).value;
+        this.tripsEditorService.setLineColor(line, color);
     }
 
 }

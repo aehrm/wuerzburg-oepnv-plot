@@ -5,7 +5,21 @@ import {Line, Trip, TripToPlot} from "./trip.model";
     providedIn: 'root'
 })
 export class TripsEditorService {
+    static COLOR_PALETTE = [
+        "#5778a4",
+        "#e49444",
+        "#d1615d",
+        "#85b6b2",
+        "#6a9f58",
+        "#e7ca60",
+        "#a87c9f",
+        "#f1a2a9",
+        "#967662",
+        "#b8b0ac",
+    ]
+
     private tripsToPlot: WritableSignal<TripToPlot[]> = signal([]);
+    colorMapping: WritableSignal<Map<string, string>> = signal(new Map());
 
     readonly items: Signal<TripToPlot[]> = this.tripsToPlot.asReadonly();
 
@@ -49,5 +63,31 @@ export class TripsEditorService {
                 return tripToPlot;
             }
         }))
+    }
+
+    remove(toRemove: TripToPlot): void {
+        this.tripsToPlot.update(items => items.filter(tripToPlot => tripToPlot.trip.uuid !== toRemove.trip.uuid));
+    }
+
+    getLineColor(line: Line): string {
+        if (this.colorMapping().has(line.id)) {
+            return this.colorMapping().get(line.id)!;
+        } else {
+            const usedColors = new Set(this.colorMapping().values());
+            const freeColors = TripsEditorService.COLOR_PALETTE.filter(x => !usedColors.has(x));
+            let nextFreeColor: string;
+            if (freeColors.length > 0) {
+                nextFreeColor = freeColors[0];
+            } else {
+                nextFreeColor = "#000000"
+            }
+
+            this.colorMapping.update(map => new Map(map).set(line.id, nextFreeColor));
+            return nextFreeColor;
+        }
+    }
+
+    setLineColor(line: Line, color: string): void {
+        this.colorMapping.update(map => new Map(map).set(line.id, color));
     }
 }
