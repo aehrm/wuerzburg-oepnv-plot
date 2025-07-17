@@ -13,31 +13,13 @@ import {TimetablePlotComponent} from "./plot/plot.component";
         TimetablePlotComponent,
     ],
     template: `
-    <div>
-      <header>
-        <div>
-          <h1>Product Store</h1>
-        </div>
-      </header>
-      
-      <main>
-        <div>
-          <div>
-            <stop-location-search/>
-          </div>
-          
-          <div>
-            <trips-editor></trips-editor>
-          </div>
-            
-          <div>
-              <timetable-plot></timetable-plot>
-          </div>
-        </div>
-      </main>
-    </div>
+  <main>
+    <stop-location-search/>
+    <trips-editor></trips-editor>
+    <timetable-plot></timetable-plot>
+  </main>
   `
 })
 export class BuilderComponent {
-    title = 'product-shopping-app';
+    
 }

@@ -1,7 +1,0 @@
-<h2>Trip Selector</h2>
-
-<ul>
-    @for (trip of trips(); track trip.uuid) {
-        <li><trip-editor [trip]="trip" (removeFn)="removeTrip(trip.uuid)" /></li>
-    }
-</ul>
