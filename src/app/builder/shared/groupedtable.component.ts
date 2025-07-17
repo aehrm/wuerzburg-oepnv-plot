@@ -14,6 +14,7 @@ import {CommonModule} from "@angular/common";
 
 export interface TableItem {
     id: string;
+    disabled?: boolean;
 }
 
 export interface TableGroup<T extends TableItem> {
@@ -68,10 +69,11 @@ export interface TableGroup<T extends TableItem> {
             @if (groupExpandedStates().get(group.id)) {
               <div class="group-items">
                 @for (item of group.items; track item.id) {
-                  <div class="item-row" [class.selected]="isItemSelected(item.id)">
+                  <div class="item-row" [class.selected]="isItemSelected(item.id)" [class.disabled]="item.disabled ?? false">
                     <div class="checkbox-column">
                       <input 
                         type="checkbox" 
+                        [disabled]="item.disabled ?? false"
                         [checked]="isItemSelected(item.id)"
                         (change)="toggleItemSelection(item.id, group.id, $event)"
                         class="item-checkbox"
@@ -125,13 +127,13 @@ export class GroupedTableComponent<T extends TableItem> {
 
     // Computed values
     headerCheckboxState = computed(() => {
-        const allItems = this.getAllItemIds();
         const selectedCount = this.selectedIds().size;
-        const totalCount = allItems.length;
+        const totalCount = this.groups().flatMap(group => group.items).length;
+        const disabledCount = this.allItems().filter((item: T) => item.disabled ?? false).length;
 
         if (selectedCount === 0) {
             return { checked: false, indeterminate: false };
-        } else if (selectedCount === totalCount) {
+        } else if (selectedCount === totalCount - disabledCount) {
             return { checked: true, indeterminate: false };
         } else {
             return { checked: false, indeterminate: true };
@@ -140,7 +142,11 @@ export class GroupedTableComponent<T extends TableItem> {
 
     selectedItems = computed(() => {
         const selectedIds = this.selectedIds();
-        return this.groups().flatMap(x => x.items).filter(x => selectedIds.has(x.id));
+        return this.allItems().filter(x => selectedIds.has(x.id));
+    })
+
+    allItems = computed(() => {
+        return this.groups().flatMap(x => x.items);
     })
 
     // Public methods for template
@@ -149,11 +155,12 @@ export class GroupedTableComponent<T extends TableItem> {
         if (!group) return { checked: false, indeterminate: false };
 
         const groupItemIds = group.items.map(item => item.id);
-        const selectedInGroup = groupItemIds.filter(id => this.selectedIds().has(id));
+        const selectedInGroup = groupItemIds.filter(id => this.selectedIds().has(id)).length;
+        const disabledInGroup = group.items.filter(item => item.disabled ?? false).length;
 
-        if (selectedInGroup.length === 0) {
+        if (selectedInGroup === 0) {
             return { checked: false, indeterminate: false };
-        } else if (selectedInGroup.length === groupItemIds.length) {
+        } else if (selectedInGroup === groupItemIds.length - disabledInGroup) {
             return { checked: true, indeterminate: false };
         } else {
             return { checked: false, indeterminate: true };
@@ -170,7 +177,8 @@ export class GroupedTableComponent<T extends TableItem> {
 
     toggleSelectAll(event: Event): void {
         const checkbox = event.target as HTMLInputElement;
-        const allItemIds = this.getAllItemIds();
+        const allItemIds = this.groups().flatMap(group => group.items)
+            .filter(item => !item.disabled).map(item => item.id);
 
         if (checkbox.checked) {
             this.selectedIds.set(new Set(allItemIds));
@@ -186,7 +194,7 @@ export class GroupedTableComponent<T extends TableItem> {
         const group = this.groups().find(g => g.id === groupId);
         if (!group) return;
 
-        const groupItemIds = group.items.map(item => item.id);
+        const groupItemIds = group.items.filter(item => !item.disabled).map(item => item.id);
         const newSelected = new Set(this.selectedIds());
 
         if (checkbox.checked) {
@@ -236,11 +244,6 @@ export class GroupedTableComponent<T extends TableItem> {
             initialStates.set(group.id, this.initialExpandedGroups().includes(group.id));
         });
         this.groupExpandedStates.set(initialStates);
-    }
-
-    private getAllItemIds(): string[] {
-        return this.groups().flatMap(group => group.items.map(item => item.id)
-        );
     }
 
     private emitSelectionChange(): void {

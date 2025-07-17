@@ -21,9 +21,11 @@ import {GroupedTableComponent, TableGroup, TableItem} from "../shared/groupedtab
 class TableStop implements TableItem {
 
     stop: Stop;
+    disabled: boolean;
 
-    constructor(stop: Stop) {
+    constructor(stop: Stop, disabled: boolean) {
         this.stop = stop;
+        this.disabled = disabled;
     }
 
     get id(): string {
@@ -68,7 +70,7 @@ class TableStop implements TableItem {
                         <div>
                         Nr. {{ item.stop.trip.tripCode }} um {{ item.stop.departureTime! | dateTimeFormat: 'HH:mm' }}
                             nach {{ item.stop.trip.stops.at(-1)!.location.shortName }}
-                            <button (click)="addTripToEditor(item.stop)">Add to Plot</button>
+                            <button (click)="addTripToEditor(item.stop)" [disabled]="item.disabled!">Add to Plot</button>
                         </div>
                     </ng-template>
                 </app-grouped-table>
@@ -89,10 +91,14 @@ export class TripSelectorComponent {
                 return (a.name + a.destinationDesc).localeCompare((b.name + b.destinationDesc));
             })
             .map(([line, stops]) => {
+                const tableStops: TableStop[] = stops.map(s => {
+                    const isAlreadyInEditor = this.editorService.has(s.trip);
+                    return new TableStop(s, isAlreadyInEditor)
+                });
                 return {
                     id: line.id,
                     line: line,
-                    items: stops.map(s => new TableStop(s))
+                    items: tableStops
                 }
             })
     })

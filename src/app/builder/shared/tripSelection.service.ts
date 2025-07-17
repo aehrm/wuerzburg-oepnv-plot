@@ -90,4 +90,8 @@ export class TripsEditorService {
     setLineColor(line: Line, color: string): void {
         this.colorMapping.update(map => new Map(map).set(line.id, color));
     }
+
+    has(trip: Trip): boolean {
+        return this.tripsToPlot().some(t => t.trip.uuid == trip.uuid);
+    }
 }

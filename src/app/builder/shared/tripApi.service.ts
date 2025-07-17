@@ -19,7 +19,7 @@ export class ApiService {
     constructor(private http: HttpClient) {}
 
     async searchStops(searchTerm: string): Promise<StopLocation[]> {
-        const baseUrl = 'https://bahnland-bayern.de/efa/XML_STOPFINDER_REQUEST';
+        const baseUrl = 'https://fahrtauskunft.avv-augsburg.de/efa/XML_STOPFINDER_REQUEST';
         const params = new URLSearchParams({
             coordOutputFormat: 'WGS84[dd.ddddd]',
             commonMacro: 'stopfinder',
@@ -56,7 +56,7 @@ export class ApiService {
     }
 
     async getStopsAtLocation(stopLocation: StopLocation, startDate: DateTime, endDate: DateTime): Promise<Stop[]> {
-        const baseUrl = 'https://bahnland-bayern.de/efa/XML_DM_REQUEST';
+        const baseUrl = 'https://fahrtauskunft.avv-augsburg.de/efa/XML_DM_REQUEST';
         const params = new URLSearchParams({
             coordOutputFormat: 'WGS84[dd.ddddd]',
             deleteAssignedStops_dm: '1',
@@ -94,8 +94,7 @@ export class ApiService {
         });
 
         const url = `${baseUrl}?${params.toString()}`;
-        const response = await fetch(url)
-        const data = await response.json();
+        const data = await lastValueFrom(this.http.get<any>(url, {responseType: 'json'}));
 
         const getStopLocation = function(stopLocationObj: any): StopLocation {
             if (stopLocationObj.type === "stop") {
