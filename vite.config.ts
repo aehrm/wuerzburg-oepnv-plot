@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => ({
     mainFields: ['module'],
   },
   plugins: [
-    angular()
+    angular({
+      inlineStylesExtension: 'sass'
+    })
   ],
   base: './'
 }));

@@ -4,38 +4,23 @@ import { ApiService  } from '../shared/tripApi.service';
 import { TripSelectorComponent } from '../tripselector/tripselector.component';
 import {StopLocation} from "../shared/trip.model";
 import { DateTime } from "luxon";
+import {SearchSelectComponent} from "../shared/search-select.component";
 
 @Component({
     selector: 'stop-location-search',
     standalone: true,
-    imports: [FormsModule, TripSelectorComponent],
+    imports: [FormsModule, TripSelectorComponent, SearchSelectComponent],
     template: `
-        <div>
-            <h2>Search Stops</h2>
+            <h2>Abfahrten</h2>
             <div>
-                <input
-                        type="text"
-                        [(ngModel)]="searchTerm"
-                        (input)="onSearchInput()"
-                        placeholder="Search for stops..."
-                />
-                von <input type="time" [(ngModel)]="startTime" (input)="onUpdateDates()" />
-                bis <input type="time" [(ngModel)]="endTime" (change)="onUpdateDates()" />;
-                Tag <input type="date" [(ngModel)]="searchDay" (change)="onUpdateDates()" />
-            </div>
-
-            <div>
-                @if (loading()) {
-                    <div>Loading stops...</div>
-                } @else if (stopLocations().length) {
-                    <ul>
-                        @for (stop of stopLocations(); track stop.id) {
-                            <li (click)="selectCategory(stop)">{{ stop.name }}</li>
-                        }
-                    </ul>
-                } @else if (hasSearched()) {
-                    <div>No stops found</div>
-                }
+                <p>
+                    Von <input type="time" [(ngModel)]="startTime" (input)="onUpdateDates()" />
+                    bis <input type="time" [(ngModel)]="endTime" (change)="onUpdateDates()" />;
+                    Tag <input type="date" [(ngModel)]="searchDay" (change)="onUpdateDates()" />
+                </p>
+                <div class="search-select-container">
+                    <search-select placeholder="Suche nach Haltestelle..." [fetchOptions]="searchStops" (selectedChange)="onSelectChange($event)"></search-select>
+                </div>
             </div>
 
             @if (selectedStopLocation()) {
@@ -45,21 +30,16 @@ import { DateTime } from "luxon";
                         [(endDate)]="endDate"
                 />
             }
-        </div>
     `
 })
 export class StopLocationSearchComponent {
     private apiService = inject(ApiService);
 
     searchTerm = '';
-    searchTimeout: any = null;
 
     searchDay = ''; //signal('');
     startTime = '08:00';
     endTime = '18:00';
-    stopLocations = signal<StopLocation[]>([]);
-    loading = signal<boolean>(false);
-    hasSearched = signal<boolean>(false);
     selectedStopLocation = signal<StopLocation | null>(null);
 
     startDate = signal<DateTime|undefined>(undefined);
@@ -69,18 +49,6 @@ export class StopLocationSearchComponent {
         this.onUpdateDates();
         this.searchDay = DateTime.now().toFormat('yyyy-MM-dd');
         this.onUpdateDates();
-    }
-
-    onSearchInput(): void {
-        // Clear any pending timeout
-        if (this.searchTimeout) {
-            clearTimeout(this.searchTimeout);
-        }
-
-        // Set a new timeout to debounce the search
-        this.searchTimeout = setTimeout(() => {
-            this.searchStops();
-        }, 300);
     }
 
     onUpdateDates(): void {
@@ -98,28 +66,22 @@ export class StopLocationSearchComponent {
         this.endDate.set(newEndDate)
     }
 
-    async searchStops(): Promise<void> {
-        if (!this.searchTerm || this.searchTerm.length < 2) {
-            this.stopLocations.set([]);
-            this.hasSearched.set(false);
-            return;
+    searchStops = async (query: string): Promise<[StopLocation, string][]> => {
+        if (!query || query.length < 2) {
+            return []
         }
-
-        this.loading.set(true);
-        this.hasSearched.set(true);
 
         try {
-            const results = await this.apiService.searchStops(this.searchTerm);
-            this.stopLocations.set(results);
+            const results = await this.apiService.searchStops(query);
+            return results.map(x => [x, x.name]);
         } catch (error) {
             console.error('Error searching stops:', error);
-            this.stopLocations.set([]);
-        } finally {
-            this.loading.set(false);
+            throw error;
         }
     }
 
-    selectCategory(stop: StopLocation): void {
+    onSelectChange(stop: StopLocation): void {
         this.selectedStopLocation.set(stop);
     }
+
 }

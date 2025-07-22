@@ -6,10 +6,10 @@ import { RouterOutlet } from '@angular/router';
   imports: [RouterOutlet],
   template: `
     <h1>Würzburger ÖPNV Plot Generator</h1>
-    <router-outlet />
+    <main>
+      <router-outlet />
+    </main>
   `,
-  styleUrl: './app.component.sass'
 })
 export class AppComponent {
-  title = 'Würzburg ÖPNV Plots';
 }

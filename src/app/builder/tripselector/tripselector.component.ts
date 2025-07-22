@@ -38,7 +38,6 @@ class TableStop implements TableItem {
     selector: 'trip-selector',
     imports: [LuxonDateTimeFormat, CdkAccordionModule, GroupedTableComponent],
     template: `
-        <div>
             <h2>Stops at {{ stopLocation().name }}</h2>
 
             @if (loading()) {
@@ -57,8 +56,10 @@ class TableStop implements TableItem {
                                             class="header-checkbox"
                                     >
                                 </div>
+                                <div class="actions-column">
+                                  <button (click)="addSelectedTripsToEditor()">Add Selected to Plot</button>
+                                </div>
                             </div>
-                            <button (click)="addSelectedTripsToEditor()">Add Selected to Plot</button>
                         </div>
                     </ng-template>
                     
@@ -67,15 +68,18 @@ class TableStop implements TableItem {
                     </ng-template>
 
                     <ng-template #itemTemplate let-item>
-                        <div>
-                        Nr. {{ item.stop.trip.tripCode }} um {{ item.stop.departureTime! | dateTimeFormat: 'HH:mm' }}
-                            nach {{ item.stop.trip.stops.at(-1)!.location.shortName }}
-                            <button (click)="addTripToEditor(item.stop)" [disabled]="item.disabled!">Add to Plot</button>
+                        <div class="trip-table-item-container">
+                            <div class="trip-table-item-label">
+                                {{ item.stop.departureTime! | dateTimeFormat: 'HH:mm' }}
+                                nach {{ item.stop.trip.stops.at(-1)!.location.shortName ?? item.stop.trip.stops.at(-1)!.location.name }}
+                            </div>
+                            <div class="trip-table-item-actions">
+                                <button (click)="addTripToEditor(item.stop)" [disabled]="item.disabled!">Add to Plot</button>
+                            </div>
                         </div>
                     </ng-template>
                 </app-grouped-table>
             }
-        </div>
     `
 })
 export class TripSelectorComponent {

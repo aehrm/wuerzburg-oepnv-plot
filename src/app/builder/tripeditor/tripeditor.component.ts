@@ -4,6 +4,7 @@ import {TripsEditorItem} from './tripseditoritem.component';
 import {CdkAccordionModule} from "@angular/cdk/accordion";
 import {GroupedTableComponent, TableItem} from "../shared/groupedtable.component";
 import {Line, TripToPlot} from "../shared/trip.model";
+import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 
 class TableTrip implements TableItem {
     tripToPlot: TripToPlot;
@@ -20,10 +21,9 @@ class TableTrip implements TableItem {
 
 @Component({
     selector: 'trips-editor',
-    imports: [TripsEditorItem, CdkAccordionModule, GroupedTableComponent],
+    imports: [TripsEditorItem, CdkAccordionModule, GroupedTableComponent, LuxonDateTimeFormat],
     template: `
-        <div>
-            <h2>Selected Trips</h2>
+            <h2>Fahrten</h2>
             <app-grouped-table #groupedTable [groups]="tableGroups()">
                 <ng-template #headerTemplate>
                     <div class="table-header">
@@ -36,6 +36,8 @@ class TableTrip implements TableItem {
                                         (change)="groupedTable.toggleSelectAll($event)"
                                         class="header-checkbox"
                                 >
+                            </div>
+                            <div class="action-column">
                                 <button (click)="removeSelected()">Delete selected</button>
                             </div>
                         </div>
@@ -43,15 +45,20 @@ class TableTrip implements TableItem {
                 </ng-template>
 
                 <ng-template #groupHeaderTemplate let-group>
-                    {{ group.line.name }} nach {{ group.line.destinationDesc }}
-                    <input type="color" [value]="lineColor(group.line)" (change)="updateLineColor(group.line, $event)" />
+                    <div class="trip-editor-group-header-container">
+                        <div class="trip-editor-group-header-label">
+                            {{ group.line.name }} nach {{ group.line.destinationDesc }}
+                        </div>
+                        <div class="trip-editor-group-header-actions">
+                            <input type="color" [value]="lineColor(group.line)" (change)="updateLineColor(group.line, $event)" />
+                        </div>
+                    </div>
                 </ng-template>
 
                 <ng-template #itemTemplate let-tableItem>
                     <trips-editor-item [tripToPlot]="tableItem.tripToPlot"/>
                 </ng-template>
             </app-grouped-table>
-        </div>
     `
 })
 export class TripsEditor {

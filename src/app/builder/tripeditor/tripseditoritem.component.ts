@@ -9,33 +9,33 @@ import {CdkAccordionItem} from "@angular/cdk/accordion";
     imports: [LuxonDateTimeFormat, CdkAccordionItem],
     template: `
         <cdk-accordion-item #accordionItem="cdkAccordionItem" class="example-accordion-item">
-            <button
-                    class="example-accordion-item-header"
-                    (click)="accordionItem.toggle()"
-                    tabindex="0"
-            > {{ tripToPlot().trip.line.name }} Code {{ tripToPlot().trip.tripCode }}
-            </button>
-            <button (click)="remove()">Delete</button>
+            <div class="trip-editor-item-head">
+                <div class="trip-editor-item-label">
+                    {{ tripToPlot().trip.line.name }} nach {{ tripToPlot().trip.line.destinationDesc }} ab {{ tripToPlot().trip.stops[0].departureTime! | dateTimeFormat: 'HH:mm' }}
+                </div>
+                <div class="trip-editor-item-control">
+                    <button (click)="remove()">Delete</button>
+                    
+                    <button
+                            (click)="accordionItem.toggle()"
+                            tabindex="0"
+                    >▶</button>
+                </div>
+            </div>
             @if (accordionItem.expanded) {
-                <div
-                        class="example-accordion-item-body"
-                        role="region"
-                        [style.display]="accordionItem.expanded ? '' : 'none'"
-                >
-                    <div>
-                        <p>{{ tripToPlot().trip.line.name }} Code {{ tripToPlot().trip.tripCode }}</p>
-                        <p>
-                            <button (click)="applyStopsToAllTrips()">Apply stops to all trips</button>
-                        </p>
-                        <ul>
-                            @for (stop of tripToPlot().trip.stops; track $index) {
-                                <li>{{ stop.location.shortName ?? stop.location.name }} {{ (stop.arrivalTime ?? stop.departureTime)! | dateTimeFormat: 'HH:mm' }}
-                                    <input type="checkbox" [checked]="isStopSelected($index)"
-                                           (change)="changeSelected($index)"/>
-                                </li>
-                            }
-                        </ul>
-                    </div>
+                <div class="trip-editor-item-content-container">
+                    <ul>
+                        @for (stop of tripToPlot().trip.stops; track $index) {
+                            <li>
+                                <input type="checkbox" [checked]="isStopSelected($index)"
+                                       (change)="changeSelected($index)"/>
+                                <span>{{ stop.location.shortName ?? stop.location.name }} {{ (stop.arrivalTime ?? stop.departureTime)! | dateTimeFormat: 'HH:mm' }}</span>
+                            </li>
+                        }
+                    </ul>
+                    <p>
+                        <button (click)="applyStopsToAllTrips()">Apply stops to all trips</button>
+                    </p>
                 </div>
             }
         </cdk-accordion-item>

@@ -49,6 +49,12 @@ export interface TableGroup<T extends TableItem> {
                     class="group-checkbox"
                   >
                 </div>
+                <div class="label-column">
+                  <ng-container
+                    [ngTemplateOutlet]="groupHeaderTemplate()"
+                    [ngTemplateOutletContext]="{ $implicit: group, index: $index }"
+                  ></ng-container>
+                </div>
                 <div class="expand-column">
                   <button 
                     class="expand-button"
@@ -58,10 +64,6 @@ export interface TableGroup<T extends TableItem> {
                     <span class="expand-icon" [class.rotated]="groupExpandedStates().get(group.id)">▶</span>
                   </button>
                 </div>
-                <ng-container
-                        [ngTemplateOutlet]="groupHeaderTemplate()"
-                        [ngTemplateOutletContext]="{ $implicit: group, index: $index }"
-                ></ng-container>
               </div>
             </div>
 
@@ -115,17 +117,12 @@ export class GroupedTableComponent<T extends TableItem> {
         expanded: boolean;
     }>();
 
-    // Internal state
     selectedIds = signal<Set<string>>(new Set());
     groupExpandedStates = signal<Map<string, boolean>>(new Map());
 
     constructor() {
-        // effect(() => {
-        //     this.initializeExpandedStates();
-        // })
     }
 
-    // Computed values
     headerCheckboxState = computed(() => {
         const selectedCount = this.selectedIds().size;
         const totalCount = this.groups().flatMap(group => group.items).length;
@@ -235,15 +232,6 @@ export class GroupedTableComponent<T extends TableItem> {
             groupId,
             expanded: newStates.get(groupId)!
         });
-    }
-
-    // Private methods
-    private initializeExpandedStates(): void {
-        const initialStates: Map<string, boolean> = new Map();
-        this.groups().forEach(group => {
-            initialStates.set(group.id, this.initialExpandedGroups().includes(group.id));
-        });
-        this.groupExpandedStates.set(initialStates);
     }
 
     private emitSelectionChange(): void {

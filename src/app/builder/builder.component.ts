@@ -5,7 +5,7 @@ import { TripsEditorService } from './shared/tripSelection.service';
 import {TimetablePlotComponent} from "./plot/plot.component";
 
 @Component({
-    selector: 'app-root',
+    selector: 'builder-component',
     standalone: true,
     imports: [
         StopLocationSearchComponent,
@@ -13,13 +13,11 @@ import {TimetablePlotComponent} from "./plot/plot.component";
         TimetablePlotComponent,
     ],
     template: `
-  <main>
-    <stop-location-search/>
-    <trips-editor></trips-editor>
-    <timetable-plot></timetable-plot>
-  </main>
+        <stop-location-search/>
+        <trips-editor></trips-editor>
+        <timetable-plot></timetable-plot>
   `
 })
 export class BuilderComponent {
-    
+
 }

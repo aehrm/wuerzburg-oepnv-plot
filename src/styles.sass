@@ -1,0 +1,102 @@
+body
+  margin-left: auto
+  margin-right: auto
+  max-width: 80em
+  font-family: sans-serif
+
+search-select .dropdown-container
+  width: 100%
+  position: relative
+  display: inline-block
+
+  > input
+    width: 100%
+    box-sizing: border-box
+
+  > .dropdown
+    position: absolute
+    top: 100%
+    left: 0
+    z-index: 10
+    background-color: white
+    border: 1px solid #ccc
+    width: 100%
+    min-width: 10em
+
+    > input
+      width: 100%
+      box-sizing: border-box
+
+  .dropdown-item
+    font-size: .9em
+    padding: 2px 2px 0 2px
+    cursor: pointer
+
+    &:hover
+      background-color: #eee
+
+app-grouped-table
+  .checkbox-column
+    width: 30px
+
+  .header-row, .group-header-row, .item-row
+    display: flex
+
+    .label-column
+      flex: 1 0 auto
+
+    .item-content
+      flex: 1 0 auto
+
+
+builder-component
+  display: flex
+  flex-wrap: wrap
+  gap: 1em
+
+  > *
+    flex: 1 0 auto
+
+  > stop-location-search, > trips-editor
+    width: 30%
+
+  > timetable-plot
+    width: 100%
+
+stop-location-search, trips-editor
+  padding: 1em
+  box-sizing: border-box
+  border: 1px solid black
+  > *:first-child
+    margin-top: 0
+  > *:last-child
+    margin-bottom: 0
+
+trip-selector
+  .trip-table-item-container
+    display: flex
+    > .trip-table-item-label
+      flex: 1 0 auto
+
+
+trips-editor
+  .trip-editor-group-header-container
+    display: flex
+    .trip-editor-group-header-label
+      flex: 1 0 auto
+
+trips-editor-item
+  .trip-editor-item-head
+    display: flex
+    > .trip-editor-item-label
+      flex: 1 0 auto
+
+  .trip-editor-item-content-container
+    > ul
+      margin-left: 0
+      > li
+        display: flex
+
+        > span
+          margin-left: 10px
+          flex: 1 0 auto
