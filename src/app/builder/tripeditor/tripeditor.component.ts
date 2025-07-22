@@ -2,7 +2,7 @@ import {Component, computed, inject, viewChild} from '@angular/core';
 import {TripsEditorService} from '../shared/tripSelection.service';
 import {TripsEditorItem} from './tripseditoritem.component';
 import {CdkAccordionModule} from "@angular/cdk/accordion";
-import {GroupedTableComponent, TableItem} from "../shared/groupedtable.component";
+import {GroupedTableComponent, TableItem} from "../../shared/groupedtable.component";
 import {Line, TripToPlot} from "../shared/trip.model";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 

@@ -16,7 +16,7 @@ import {Line, Stop, StopLocation, Trip} from "../shared/trip.model";
 import {DateTime} from "luxon";
 import {LuxonDateTimeFormat} from "../shared/luxon.pipe";
 import {CdkAccordionModule} from '@angular/cdk/accordion';
-import {GroupedTableComponent, TableGroup, TableItem} from "../shared/groupedtable.component";
+import {GroupedTableComponent, TableGroup, TableItem} from "../../shared/groupedtable.component";
 
 class TableStop implements TableItem {
 

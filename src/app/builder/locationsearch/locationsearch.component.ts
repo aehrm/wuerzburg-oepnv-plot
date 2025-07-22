@@ -4,7 +4,7 @@ import { ApiService  } from '../shared/tripApi.service';
 import { TripSelectorComponent } from '../tripselector/tripselector.component';
 import {StopLocation} from "../shared/trip.model";
 import { DateTime } from "luxon";
-import {SearchSelectComponent} from "../shared/search-select.component";
+import {SearchSelectComponent} from "../../shared/search-select.component";
 
 @Component({
     selector: 'stop-location-search',
