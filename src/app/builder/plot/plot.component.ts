@@ -84,15 +84,16 @@ export class TimetablePlotComponent {
       .attr("width", this.width())
       .attr("height", this.height());
 
-    const containerWidth =
-      this.elementRef.nativeElement.querySelector(".chart").clientWidth;
+    const chart = this.elementRef.nativeElement.querySelector(".chart");
+    const containerWidth = chart.clientWidth;
     if (this.width() > containerWidth) {
       const scale = containerWidth / this.width();
       this.plotSelection
         .style("transform", `scale(${scale})`)
         .style("transform-origin", "top left");
-      this.elementRef.nativeElement.querySelector(".chart").style.height =
-        `${this.height() * scale}px`;
+      chart.style.height = `${this.height() * scale}px`;
+    } else {
+      chart.style.height = "auto";
     }
 
     const toD3Time = (dateObj: DateTime) => {
