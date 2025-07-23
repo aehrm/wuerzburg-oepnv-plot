@@ -55,12 +55,37 @@ export class TripsEditorService {
         }));
     }
 
-    applyStops(selectedStopIndices: Set<number>, selectFn: (tripToPlot: TripToPlot) => boolean) {
+    copyStopsFuzzy(tgt: TripToPlot, src: TripToPlot) {
+        const convertToLabels = (tripToPlot: TripToPlot): {
+            name: string,
+            index: number,
+            selected: boolean
+        }[] => {
+            const counter = new Map<string, number>();
+            return tripToPlot.trip.stops.map((stop, i) => {
+                const locationName = stop.location.name;
+                const locationIndex = counter.get(locationName) ?? 0
+
+                counter.set(locationName, locationIndex+1)
+                return {name: locationName, index: locationIndex, selected: tripToPlot.selectedStopIndices.has(i)}
+            })
+        }
+
+        const srcLabels = convertToLabels(src)
+        const tgtLabels = convertToLabels(tgt)
+        const newStopIndices = new Set<number>();
+        for (const [index, tgtLabel] of tgtLabels.entries()) {
+            const hasLabelInSrc = srcLabels.some(x => x.name == tgtLabel.name && x.index == tgtLabel.index && x.selected);
+            if (hasLabelInSrc) {
+                newStopIndices.add(index)
+            }
+        }
+
         this.tripsToPlot.update(items => items.map(tripToPlot => {
-            if (selectFn(tripToPlot)) {
-                return new TripToPlot({...tripToPlot, selectedStopIndices: selectedStopIndices});
-            } else {
+            if (tripToPlot !== tgt) {
                 return tripToPlot;
+            } else {
+                return new TripToPlot({...tripToPlot, selectedStopIndices: newStopIndices});
             }
         }))
     }

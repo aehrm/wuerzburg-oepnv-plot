@@ -54,8 +54,12 @@ export class TripsEditorItem {
     }
 
     applyStopsToAllTrips() {
-        this.tripsEditorService.applyStops(this.tripToPlot().selectedStopIndices,
-            (tripToPlot: TripToPlot) => tripToPlot.trip.line.id === this.tripToPlot().trip.line.id);
+        const tripsToApply = this.tripsEditorService.items()
+            .filter((tripToPlot: TripToPlot) => tripToPlot.trip.line.id === this.tripToPlot().trip.line.id)
+
+        tripsToApply.forEach((tripToPlot: TripToPlot) => {
+            this.tripsEditorService.copyStopsFuzzy(tripToPlot, this.tripToPlot())
+        })
     }
 
     remove(): void {
