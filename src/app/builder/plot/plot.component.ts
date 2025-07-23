@@ -1,9 +1,12 @@
-import {Component, effect, ElementRef, inject, OnInit} from "@angular/core";
+import {Component, effect, ElementRef, inject, OnInit, signal} from "@angular/core";
 import {TripsEditorService} from "../shared/tripSelection.service";
 import * as d3 from 'd3';
 import {DragContainerElement, Line, ScaleLinear, ScaleTime} from "d3";
 import {DateTime} from "luxon";
 import {Stop, TripToPlot} from "../shared/trip.model";
+import {FormControl, FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {jsPDF} from "jspdf";
+import 'svg2pdf.js'
 
 interface PlotStop {
     locationPos: number;
@@ -17,21 +20,27 @@ interface PlotTrip {
 }
 
 @Component({
+    imports: [FormsModule],
     selector: 'timetable-plot',
     template: `
+        <div class="chart-control">
+            Breite: <input [(ngModel)]="width" type="number"><br>
+            Höhe: <input [(ngModel)]="height" type="number"><br>
+            <button (click)="export()" >Export als PDF</button>
+        </div>
         <div class="chart"></div>
     `
 })
-export class TimetablePlotComponent implements OnInit {
+export class TimetablePlotComponent {
 
     tripsEditorService = inject(TripsEditorService);
     elementRef = inject(ElementRef);
     plotSelection: d3.Selection<any, unknown, any, unknown> = d3.select('.chart');
-    dimensions = {
-        width: 800,
-        height: 800,
+    width = signal(800)
+    height = signal(800)
+    plot_config = {
         margin: {
-            left: 50,
+            left: 80,
             right: 10,
             top: 100,
             bottom: 100,
@@ -45,7 +54,6 @@ export class TimetablePlotComponent implements OnInit {
     }
 
     stopPositions: Map<string, number> = new Map();
-    brushExtent: [[number, number], [number, number]] = [[0,0], [0,0]];
 
     constructor() {
         effect(() => {
@@ -53,20 +61,23 @@ export class TimetablePlotComponent implements OnInit {
             this.updatePlot();
         });
     }
-
-    ngOnInit() {
-        this.plotSelection = d3.select(this.elementRef.nativeElement).select('.chart')
-            .append('svg')
-            .attr('width', this.dimensions.width)
-            .attr('height', this.dimensions.height);
-
-        // this.plotSvg.append('text').text('hello').attr('y', 20);
-
-        this.updatePlot();
-    }
+    //
+    // ngOnInit() {
+    //     this.updatePlot();
+    // }
 
     updatePlot() {
-        this.plotSelection.selectAll("*").remove()
+        d3.select(this.elementRef.nativeElement).select('.chart').selectChildren().remove()
+        this.plotSelection = d3.select(this.elementRef.nativeElement).select('.chart')
+            .append('svg')
+            .attr('width', this.width())
+            .attr('height', this.height());
+
+        const containerWidth = this.elementRef.nativeElement.querySelector('.chart').clientWidth;
+        if (this.width() > containerWidth) {
+            this.plotSelection.style('transform', `scale(${containerWidth / this.width()})`)
+                .style('transform-origin', 'top left');
+        }
 
         const toD3Time = (dateObj: DateTime) => {
             const startOfDay = dateObj.startOf('day');
@@ -87,7 +98,7 @@ export class TimetablePlotComponent implements OnInit {
             }
         }
 
-        this.dimensions.margin.top = this.dimensions.margin.bottom = Math.max(...[...locationLabels.values()].map(l => l.length)) * 10;
+        this.plot_config.margin.top = this.plot_config.margin.bottom = Math.max(...[...locationLabels.values()].map(l => l.length)) * 10;
 
         const maxStopPos = d3.max(allLocationIds, i => this.stopPositions.get(i) ?? 0) ?? 0;
         Array.from(allLocationIds.values()).filter(i => !this.stopPositions.has(i)).forEach((i, idx) => {
@@ -114,12 +125,16 @@ export class TimetablePlotComponent implements OnInit {
 
         const x: ScaleLinear<number, number> = d3.scaleLinear()
             .domain(<[number, number]>d3.extent(allLocationIds, (d): number => this.stopPositions.get(d)!))
-            .range([this.dimensions.margin.left + this.dimensions.padding.left, this.dimensions.width - this.dimensions.margin.right - this.dimensions.padding.right])
+            .range([this.plot_config.margin.left + this.plot_config.padding.left, this.width() - this.plot_config.margin.right - this.plot_config.padding.right])
 
-        const yExtent: [Date, Date] = <[Date, Date]>d3.extent(plotData.flatMap(x => x.stops), (stop: PlotStop): Date => stop.stopTime);
+        const timeInterval = d3.utcMinute.every(15)!
+        let yExtent: [Date, Date] = <[Date, Date]>d3.extent(plotData.flatMap(x => x.stops), (stop: PlotStop): Date => stop.stopTime);
+        yExtent[0] = timeInterval.floor(yExtent[0]);
+        yExtent[1] = timeInterval.ceil(yExtent[1]);
+
         const y: ScaleTime<number, number> = d3.scaleUtc()
             .domain(yExtent)
-            .range([this.dimensions.margin.top + this.dimensions.padding.top, this.dimensions.height - this.dimensions.margin.bottom - this.dimensions.padding.bottom])
+            .range([this.plot_config.margin.top + this.plot_config.padding.top, this.height() - this.plot_config.margin.bottom - this.plot_config.padding.bottom])
 
         const line: Line<PlotStop> = (<Line<PlotStop>>d3.line())
             .x((d: PlotStop): number => x(d.locationPos))
@@ -128,7 +143,7 @@ export class TimetablePlotComponent implements OnInit {
         const trips = this.plotSelection.append('g')
             .selectAll('g')
             .data(plotData)
-            .join('g').attr('stroke-width', 1.5)
+            .join('g').attr('stroke-width', 2.5)
 
         trips.append('path')
             .attr('d', trip => line(trip.stops))
@@ -142,15 +157,16 @@ export class TimetablePlotComponent implements OnInit {
             .data(d => d.stops)
             .join("circle")
             .attr("transform", d => `translate(${x(d.locationPos)},${y(d.stopTime)})`)
-            .attr("r", 2.5);
+            .attr("r", 4);
 
-        this.plotSelection.append('g').attr("transform", `translate(${this.dimensions.margin.left},0)`)
-            .call(d3.axisLeft(y).ticks(d3.utcMinute.every(15)))
+        this.plotSelection.append('g').attr("transform", `translate(${this.plot_config.margin.left},0)`)
+            .call(d3.axisLeft(<d3.AxisScale<Date>>y).ticks(timeInterval).tickFormat(d3.utcFormat("%I:%M")))
             .call(g => g.selectAll(".tick line").clone().lower()
                 .attr("stroke-opacity", 0.2)
-                .attr("x2", this.dimensions.width))
+                .attr("stroke-width", 1.6)
+                .attr("x2", this.width() - this.plot_config.margin.right - this.plot_config.margin.left))
             .call(g => g.selectAll(".tick text")
-                .style("font", "10px sans-serif"))
+                .style("font", "18px sans-serif"))
 
         const drag = (<d3.DragBehavior<SVGTextElement, string, any>>d3.drag())
             .container(<DragContainerElement>this.plotSelection.select('svg').node()!)
@@ -160,27 +176,28 @@ export class TimetablePlotComponent implements OnInit {
             })
 
         this.plotSelection.append('g')
-            .style("font", "12px sans-serif")
+            .style("font", "18px sans-serif")
             .selectAll("g")
             .data(allLocationIds)
             .join("g")
             .attr("transform", d => `translate(${x(this.stopPositions.get(d)!)},0)`)
             .call(g => g.append("line")
-                .attr("y1", this.dimensions.margin.top - 6)
-                .attr("y2", this.dimensions.margin.top)
+                .attr("y1", this.plot_config.margin.top - 6)
+                .attr("y2", this.plot_config.margin.top)
                 .attr("stroke", "currentColor"))
             .call(g => g.append("line")
-                .attr("y1", this.dimensions.height - this.dimensions.margin.bottom + 6)
-                .attr("y2", this.dimensions.height - this.dimensions.margin.bottom)
+                .attr("y1", this.height() - this.plot_config.margin.bottom + 6)
+                .attr("y2", this.height() - this.plot_config.margin.bottom)
                 .attr("stroke", "currentColor"))
             .call(g => g.append("line")
-                .attr("y1", this.dimensions.margin.top)
-                .attr("y2", this.dimensions.height - this.dimensions.margin.bottom)
+                .attr("y1", this.plot_config.margin.top)
+                .attr("y2", this.height() - this.plot_config.margin.bottom)
                 .attr("stroke-opacity", 0.2)
+                .attr("stroke-width", 1.6)
                 .attr("stroke-dasharray", "1.5,2")
                 .attr("stroke", "currentColor"))
             .call(g => g.append("text")
-                .attr("transform", `translate(0,${this.dimensions.margin.top}) rotate(-90)`)
+                .attr("transform", `translate(0,${this.plot_config.margin.top}) rotate(-90)`)
                 .style("cursor", "ew-resize")
                 .attr("x", 12)
                 .attr("dy", "0.35em")
@@ -188,7 +205,7 @@ export class TimetablePlotComponent implements OnInit {
                 .call(drag))
             .call(g => g.append("text")
                 .attr("text-anchor", "end")
-                .attr("transform", `translate(0,${this.dimensions.height - this.dimensions.margin.top}) rotate(-90)`)
+                .attr("transform", `translate(0,${this.height() - this.plot_config.margin.top}) rotate(-90)`)
                 .style("cursor", "ew-resize")
                 .attr("x", -12)
                 .attr("dy", "0.35em")
@@ -197,5 +214,16 @@ export class TimetablePlotComponent implements OnInit {
 
         return;
 
+    }
+
+    async export() {
+        const svgElement = this.elementRef.nativeElement.querySelector('svg')
+        svgElement.getBoundingClientRect()
+        const width = svgElement.width.baseVal.value
+        const height = svgElement.height.baseVal.value
+        const pdf = new jsPDF(width > height ? 'l' : 'p', 'pt', [width, height])
+
+        await pdf.svg(svgElement, { width, height })
+        pdf.save('output.pdf')
     }
 }
