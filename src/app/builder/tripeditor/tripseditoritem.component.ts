@@ -14,7 +14,7 @@ import {CdkAccordionItem} from "@angular/cdk/accordion";
                     {{ tripToPlot().trip.line.name }} nach {{ tripToPlot().trip.line.destinationDesc }} ab {{ tripToPlot().trip.stops[0].departureTime! | dateTimeFormat: 'HH:mm' }}
                 </div>
                 <div class="trip-editor-item-control">
-                    <button (click)="remove()">Delete</button>
+                    <button (click)="remove()">🗑</button>
                     
                     <button
                             (click)="accordionItem.toggle()"
@@ -34,7 +34,7 @@ import {CdkAccordionItem} from "@angular/cdk/accordion";
                         }
                     </ul>
                     <p>
-                        <button (click)="applyStopsToAllTrips()">Apply stops to all trips</button>
+                        <button (click)="applyStopsToAllTrips()">Stops auf alle Fahrten dieser Linie übertragen</button>
                     </p>
                 </div>
             }

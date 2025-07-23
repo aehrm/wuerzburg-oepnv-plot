@@ -38,10 +38,10 @@ class TableStop implements TableItem {
     selector: 'trip-selector',
     imports: [LuxonDateTimeFormat, CdkAccordionModule, GroupedTableComponent],
     template: `
-            <h2>Stops at {{ stopLocation().name }}</h2>
+            <h2>Stops bei {{ stopLocation().name }}</h2>
 
             @if (loading()) {
-                <div>Loading stops...</div>
+                <div>Lade Stops...</div>
             } @else {
                 <app-grouped-table #groupedTable [groups]="tableGroups()" >
                     <ng-template #headerTemplate>
@@ -57,7 +57,7 @@ class TableStop implements TableItem {
                                     >
                                 </div>
                                 <div class="actions-column">
-                                  <button (click)="addSelectedTripsToEditor()">Add Selected to Plot</button>
+                                  <button (click)="addSelectedTripsToEditor()">+</button>
                                 </div>
                             </div>
                         </div>
@@ -74,7 +74,7 @@ class TableStop implements TableItem {
                                 nach {{ item.stop.trip.stops.at(-1)!.location.shortName ?? item.stop.trip.stops.at(-1)!.location.name }}
                             </div>
                             <div class="trip-table-item-actions">
-                                <button (click)="addTripToEditor(item.stop)" [disabled]="item.disabled!">Add to Plot</button>
+                                <button (click)="addTripToEditor(item.stop)" [disabled]="item.disabled!">+</button>
                             </div>
                         </div>
                     </ng-template>

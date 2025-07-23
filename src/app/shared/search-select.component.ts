@@ -20,14 +20,14 @@ import {FormControl, ReactiveFormsModule} from "@angular/forms";
             @if (isDropdownOpen()) {
                 <div class="dropdown">
                     @if (isWaiting()) {
-                        <div class="dropdown-item">waiting...</div>
+                        <div class="dropdown-item">lade...</div>
                     } @else {
                         @for (opt of filteredOptions(); track $index) {
                             <div class="dropdown-item" (click)="selectOption($index)">
                                 {{opt[1]}}
                             </div>
                         } @empty {
-                            <div class="dropdown-item">No results</div>
+                            <div class="dropdown-item">Keine Ergebnisse</div>
                         }
                     }
                 </div>

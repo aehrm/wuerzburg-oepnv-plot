@@ -35,9 +35,7 @@ import {SearchSelectComponent} from "../../shared/search-select.component";
 export class StopLocationSearchComponent {
     private apiService = inject(ApiService);
 
-    searchTerm = '';
-
-    searchDay = ''; //signal('');
+    searchDay = '';
     startTime = '08:00';
     endTime = '18:00';
     selectedStopLocation = signal<StopLocation | null>(null);

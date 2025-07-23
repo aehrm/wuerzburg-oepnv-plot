@@ -38,7 +38,7 @@ class TableTrip implements TableItem {
                                 >
                             </div>
                             <div class="action-column">
-                                <button (click)="removeSelected()">Delete selected</button>
+                                <button (click)="removeSelected()">🗑</button>
                             </div>
                         </div>
                     </div>
