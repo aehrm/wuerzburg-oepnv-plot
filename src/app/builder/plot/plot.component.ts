@@ -26,7 +26,7 @@ interface PlotTrip {
         <div class="chart-control">
             Breite: <input [(ngModel)]="width" type="number"><br>
             Höhe: <input [(ngModel)]="height" type="number"><br>
-            <button (click)="export()" >Export als PDF</button>
+            <button (click)="export()">Export als PDF</button>
         </div>
         <div class="chart"></div>
     `
@@ -75,8 +75,10 @@ export class TimetablePlotComponent {
 
         const containerWidth = this.elementRef.nativeElement.querySelector('.chart').clientWidth;
         if (this.width() > containerWidth) {
-            this.plotSelection.style('transform', `scale(${containerWidth / this.width()})`)
+            const scale = containerWidth / this.width()
+            this.plotSelection.style('transform', `scale(${scale})`)
                 .style('transform-origin', 'top left');
+            this.elementRef.nativeElement.querySelector('.chart').style.height = `${this.height()*scale}px`
         }
 
         const toD3Time = (dateObj: DateTime) => {

@@ -23,7 +23,7 @@ class TableTrip implements TableItem {
     selector: 'trips-editor',
     imports: [TripsEditorItem, CdkAccordionModule, GroupedTableComponent, LuxonDateTimeFormat],
     template: `
-            <h2>Fahrten</h2>
+            <h2>Fahrten im Plot</h2>
             <app-grouped-table #groupedTable [groups]="tableGroups()">
                 <ng-template #headerTemplate>
                     <div class="table-header">
