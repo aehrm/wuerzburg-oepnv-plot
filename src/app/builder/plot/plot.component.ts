@@ -7,6 +7,7 @@ import {Stop, TripToPlot} from "../shared/trip.model";
 import {FormControl, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {jsPDF} from "jspdf";
 import 'svg2pdf.js'
+import "../../shared/RobotoCondensed-Regular-normal.js"
 
 interface PlotStop {
     locationPos: number;
@@ -168,7 +169,7 @@ export class TimetablePlotComponent {
                 .attr("stroke-width", 1.6)
                 .attr("x2", this.width() - this.plot_config.margin.right - this.plot_config.margin.left))
             .call(g => g.selectAll(".tick text")
-                .style("font", "18px sans-serif"))
+                .style("font", "18px 'Roboto Condensed'"))
 
         const drag = (<d3.DragBehavior<SVGTextElement, string, any>>d3.drag())
             .container(<DragContainerElement>this.plotSelection.select('svg').node()!)
@@ -178,7 +179,7 @@ export class TimetablePlotComponent {
             })
 
         this.plotSelection.append('g')
-            .style("font", "18px sans-serif")
+            .style("font", "18px 'Roboto Condensed'")
             .selectAll("g")
             .data(allLocationIds)
             .join("g")
@@ -225,7 +226,9 @@ export class TimetablePlotComponent {
         const height = svgElement.height.baseVal.value
         const pdf = new jsPDF(width > height ? 'l' : 'p', 'pt', [width, height])
 
+        pdf.setFont("Roboto Condensed")
         await pdf.svg(svgElement, { width, height })
-        pdf.save('output.pdf')
+        const timestamp = DateTime.now().toFormat('yyyyMMddHHmmss')
+        pdf.save(`plot_${timestamp}.pdf`)
     }
 }
