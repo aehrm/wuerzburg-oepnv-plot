@@ -1,17 +1,17 @@
-import { defineConfig } from 'vite';
-import angular from '@analogjs/vite-plugin-angular';
+import { defineConfig } from "vite";
+import angular from "@analogjs/vite-plugin-angular";
 
 export default defineConfig(({ mode }) => ({
   build: {
-    target: ['es2020'],
+    target: ["es2020"],
   },
   resolve: {
-    mainFields: ['module'],
+    mainFields: ["module"],
   },
   plugins: [
     angular({
-      inlineStylesExtension: 'sass'
-    })
+      inlineStylesExtension: "sass",
+    }),
   ],
-  base: './'
+  base: "./",
 }));
