@@ -51,7 +51,7 @@ export class ApiService {
               lat: 49.79405,
               lon: 9.930974,
             },
-          ) < 8000
+          ) < 10000
         );
       })
       .map((location: any): StopLocation => {

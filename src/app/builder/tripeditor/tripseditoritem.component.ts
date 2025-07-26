@@ -21,9 +21,19 @@ import { CdkAccordionItem } from "@angular/cdk/accordion";
           }}
         </div>
         <div class="trip-editor-item-control">
-          <button (click)="remove()">🗑</button>
+          <button (click)="remove()" class="material-button">delete</button>
 
-          <button (click)="accordionItem.toggle()" tabindex="0">▶</button>
+          <button
+            (click)="accordionItem.toggle()"
+            tabindex="0"
+            class="material-button"
+          >
+            @if (accordionItem.expanded) {
+              keyboard_arrow_up
+            } @else {
+              keyboard_arrow_down
+            }
+          </button>
         </div>
       </div>
       @if (accordionItem.expanded) {

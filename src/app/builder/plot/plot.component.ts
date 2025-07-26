@@ -31,11 +31,19 @@ interface PlotTrip {
   imports: [FormsModule],
   selector: "timetable-plot",
   template: `
-    <div class="chart-control">
-      Breite: <input [(ngModel)]="width" type="number" /><br />
-      Höhe: <input [(ngModel)]="height" type="number" /><br />
-      <button (click)="export()">Export als PDF</button>
+    <div class="plot-header">
+      <h2>Plot</h2>
+      <div class="chart-control">
+        <label>Breite:</label> <input [(ngModel)]="width" type="number" /><br />
+        <label>Höhe:</label> <input [(ngModel)]="height" type="number" /><br />
+        <button (click)="export()">Export als PDF</button>
+      </div>
     </div>
+    @if (tripsEditorService.items().length == 0) {
+      <div class="chart-placeholder">
+        Suche nach Abfahrten an einer Station, um dem Plot Fahrten hinzuzufügen
+      </div>
+    }
     <div class="chart"></div>
   `,
 })
@@ -104,6 +112,12 @@ export class TimetablePlotComponent {
 
     const tripsToPlot: TripToPlot[] = this.tripsEditorService.items();
 
+    if (tripsToPlot.length === 0) {
+      chart.style["display"] = "none";
+    } else {
+      chart.style["display"] = "block";
+    }
+
     const locationLabels: Map<string, string> = new Map();
     const allLocationIds: Set<string> = new Set();
     const plotData: PlotTrip[] = [];
@@ -140,10 +154,6 @@ export class TimetablePlotComponent {
           };
         }),
       });
-    }
-
-    if (plotData.length === 0) {
-      return;
     }
 
     const x: ScaleLinear<number, number> = d3

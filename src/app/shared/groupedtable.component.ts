@@ -63,15 +63,14 @@ export interface TableGroup<T extends TableItem> {
                 </div>
                 <div class="expand-column">
                   <button
-                    class="expand-button"
+                    class="material-button"
                     (click)="toggleGroupExpansion(group.id)"
-                    [attr.aria-expanded]="groupExpandedStates().get(group.id)"
                   >
-                    <span
-                      class="expand-icon"
-                      [class.rotated]="groupExpandedStates().get(group.id)"
-                      >▶</span
-                    >
+                    @if (groupExpandedStates().get(group.id)) {
+                      keyboard_arrow_up
+                    } @else {
+                      keyboard_arrow_down
+                    }
                   </button>
                 </div>
               </div>

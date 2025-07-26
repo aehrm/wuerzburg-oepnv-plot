@@ -47,7 +47,13 @@ class TableTrip implements TableItem {
               />
             </div>
             <div class="action-column">
-              <button (click)="removeSelected()">🗑</button>
+              <button
+                (click)="removeSelected()"
+                [disabled]="groupedTable.selectedItems().length === 0"
+                class="material-button"
+              >
+                delete
+              </button>
             </div>
           </div>
         </div>

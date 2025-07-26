@@ -33,6 +33,7 @@
     "jspdf": "^3.0.1",
     "less": "^4.3.0",
     "luxon": "^3.6.1",
+    "material-symbols": "^0.33.0",
     "sass": "^1.89.2",
     "svg2pdf.js": "^2.5.0"
   }

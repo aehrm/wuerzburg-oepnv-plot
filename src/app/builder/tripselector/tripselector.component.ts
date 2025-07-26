@@ -61,7 +61,13 @@ class TableStop implements TableItem {
                 />
               </div>
               <div class="actions-column">
-                <button (click)="addSelectedTripsToEditor()">+</button>
+                <button
+                  class="material-button"
+                  (click)="addSelectedTripsToEditor()"
+                  [disabled]="this.groupedTable().selectedItems().length == 0"
+                >
+                  add
+                </button>
               </div>
             </div>
           </div>
@@ -73,7 +79,10 @@ class TableStop implements TableItem {
 
         <ng-template #itemTemplate let-item>
           <div class="trip-table-item-container">
-            <div class="trip-table-item-label">
+            <div
+              class="trip-table-item-label"
+              [class.disabled]="item.disabled!"
+            >
               {{ item.stop.departureTime! | dateTimeFormat: "HH:mm" }}
               nach
               {{
@@ -83,10 +92,11 @@ class TableStop implements TableItem {
             </div>
             <div class="trip-table-item-actions">
               <button
+                class="material-button"
                 (click)="addTripToEditor(item.stop)"
                 [disabled]="item.disabled!"
               >
-                +
+                add
               </button>
             </div>
           </div>
