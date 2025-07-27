@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   },
   resolve: {
     mainFields: ["module"],
-    alias: {"~": path.resolve(__dirname, './node_modules')}
+    alias: { "~": path.resolve(__dirname, "./node_modules") },
   },
   plugins: [
     angular({
