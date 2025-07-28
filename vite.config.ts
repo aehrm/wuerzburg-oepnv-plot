@@ -1,6 +1,32 @@
 import * as path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, PluginOption } from "vite";
 import angular from "@analogjs/vite-plugin-angular";
+
+const globalPolyfill = (): PluginOption => {
+  return {
+    name: "vite:global-ployfill",
+    transformIndexHtml: {
+      transform(html: string) {
+        return {
+          html,
+          tags: [
+            {
+              tag: "script",
+              children: `
+                function getGlobal() {
+                  if (typeof globalThis === 'object') return globalThis;
+                  if (typeof window === 'object') return window;
+                }
+                global = getGlobal()
+              `,
+              injectTo: "head-prepend",
+            },
+          ],
+        };
+      },
+    },
+  };
+};
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -14,6 +40,7 @@ export default defineConfig(({ mode }) => ({
     angular({
       inlineStylesExtension: "sass",
     }),
+    globalPolyfill(),
   ],
   base: "./",
 }));

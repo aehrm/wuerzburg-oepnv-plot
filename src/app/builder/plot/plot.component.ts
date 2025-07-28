@@ -13,6 +13,7 @@ import { DateTime } from "luxon";
 import { Stop, TripToPlot } from "../shared/trip.model";
 import { FormControl, FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { jsPDF } from "jspdf";
+import * as layoutService from "./plotLayouter.service";
 import "svg2pdf.js";
 import "../../shared/RobotoCondensed-Regular-normal.js";
 
@@ -34,9 +35,12 @@ interface PlotTrip {
     <div class="plot-header">
       <h2>Plot</h2>
       <div class="chart-control">
+        <button (click)="export()">Export als PDF</button> &nbsp;
+        <button (click)="layout()">Automagisches Layout</button> &nbsp;
+      </div>
+      <div class="chart-settings">
         <label>Breite:</label> <input [(ngModel)]="width" type="number" /><br />
         <label>Höhe:</label> <input [(ngModel)]="height" type="number" /><br />
-        <button (click)="export()">Export als PDF</button>
       </div>
     </div>
     @if (tripsEditorService.items().length == 0) {
@@ -50,6 +54,7 @@ interface PlotTrip {
 export class TimetablePlotComponent {
   tripsEditorService = inject(TripsEditorService);
   elementRef = inject(ElementRef);
+  layouter = inject(layoutService.PlotLayouterService);
   plotSelection: d3.Selection<any, unknown, any, unknown> = d3.select(".chart");
   width = signal(800);
   height = signal(800);
@@ -75,10 +80,73 @@ export class TimetablePlotComponent {
       this.updatePlot();
     });
   }
-  //
-  // ngOnInit() {
-  //     this.updatePlot();
-  // }
+
+  layout() {
+    const tripsToPlot: TripToPlot[] = this.tripsEditorService.items();
+
+    const stopClusters = new Map(
+      Object.entries({
+        sanderring: new Set(["de:09663:348", "de:09663:346"]),
+        jupo: new Set(["de:09663:208", "de:09663:56"]),
+        hbf: new Set([
+          "de:09663:177",
+          "de:09663:68",
+          "de:09663:170",
+          "de:09663:179",
+          "de:09663:75",
+        ]),
+      }),
+    );
+
+    const convertStopId = (stopId: string) => {
+      const matchingClusters = [...stopClusters.entries()].filter(
+        ([_, cluster]) => cluster.has(stopId),
+      );
+      if (matchingClusters.length > 0) {
+        return matchingClusters[0][0];
+      } else {
+        return stopId;
+      }
+    };
+
+    // const layoutTrips: layoutService.Trip[] = tripsToPlot.map(trip => {
+    //   return trip.selectedStops.map(stop => stop.location.id);
+    // })
+    const allStopIds = new Set<string>();
+    const layoutTrips: layoutService.Trip[] = [];
+    for (const trip of tripsToPlot) {
+      const stopIds = trip.selectedStops.map((stop) => stop.location.id);
+      stopIds.forEach((stopId) => allStopIds.add(stopId));
+      layoutTrips.push(stopIds.map(convertStopId));
+    }
+
+    const locationOrder: string[] = this.layouter.layoutStops(layoutTrips);
+
+    function* generateCoordinates(): Generator<[string, number], void, void> {
+      let x = 0;
+      for (const location of locationOrder) {
+        if (stopClusters.has(location)) {
+          const cluster = stopClusters.get(location)!;
+          for (const clusterMember of cluster) {
+            if (allStopIds.has(clusterMember)) {
+              yield [clusterMember, x];
+              x = x + 0.5;
+            }
+          }
+          x = x + 0.5;
+        } else {
+          yield [location, x];
+          x = x + 1;
+        }
+      }
+    }
+
+    this.stopPositions.clear();
+    [...generateCoordinates()].forEach(([id, x]) =>
+      this.stopPositions.set(id, x),
+    );
+    this.updatePlot();
+  }
 
   updatePlot() {
     d3.select(this.elementRef.nativeElement)
