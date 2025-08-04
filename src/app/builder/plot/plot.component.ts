@@ -293,7 +293,7 @@ export class TimetablePlotComponent {
         d3
           .axisLeft(<d3.AxisScale<Date>>y)
           .ticks(timeInterval)
-          .tickFormat(d3.utcFormat("%I:%M")),
+          .tickFormat(d3.utcFormat("%H:%M")),
       )
       .call((g) =>
         g
