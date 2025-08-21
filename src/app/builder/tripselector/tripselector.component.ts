@@ -45,11 +45,7 @@ class TableStop implements TableItem {
     @if (loading()) {
       <div>Lade Stops...</div>
     } @else {
-      <app-grouped-table
-        #groupedTable
-        [groups]="tableGroups()"
-        [renderCheckboxes]="false"
-      >
+      <app-grouped-table #groupedTable [groups]="tableGroups()">
         <ng-template #headerTemplate> </ng-template>
 
         <ng-template #groupHeaderTemplate let-group>

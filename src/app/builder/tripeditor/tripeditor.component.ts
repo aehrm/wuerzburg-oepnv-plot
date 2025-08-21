@@ -5,6 +5,7 @@ import { CdkAccordionModule } from "@angular/cdk/accordion";
 import {
   GroupedTableComponent,
   TableItem,
+  TableGroup,
 } from "../../shared/groupedtable.component";
 import { Line, TripToPlot } from "../shared/trip.model";
 import { LuxonDateTimeFormat } from "../shared/luxon.pipe";
@@ -32,32 +33,7 @@ class TableTrip implements TableItem {
   template: `
     <h2>Fahrten im Plot</h2>
     <app-grouped-table #groupedTable [groups]="tableGroups()">
-      <ng-template #headerTemplate>
-        <div class="table-header">
-          <div class="header-row">
-            <div class="checkbox-column">
-              <input
-                type="checkbox"
-                [checked]="groupedTable.headerCheckboxState().checked"
-                [indeterminate]="
-                  groupedTable.headerCheckboxState().indeterminate
-                "
-                (change)="groupedTable.toggleSelectAll($event)"
-                class="header-checkbox"
-              />
-            </div>
-            <div class="action-column">
-              <button
-                (click)="removeSelected()"
-                [disabled]="groupedTable.selectedItems().length === 0"
-                class="material-button"
-              >
-                delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </ng-template>
+      <ng-template #headerTemplate> </ng-template>
 
       <ng-template #groupHeaderTemplate let-group>
         <div class="trip-editor-group-header-container">
@@ -65,6 +41,9 @@ class TableTrip implements TableItem {
             {{ group.line.name }} nach {{ group.line.destinationDesc }}
           </div>
           <div class="trip-editor-group-header-actions">
+            <button (click)="removeLine(group)" class="material-button">
+              delete
+            </button>
             <input
               type="color"
               [value]="lineColor(group.line)"
@@ -114,9 +93,8 @@ export class TripsEditor {
     );
   });
 
-  removeSelected(): void {
-    const selectedItems = this.groupedTable().selectedItems();
-    for (const item of selectedItems) {
+  removeLine(group: TableGroup<TableTrip>): void {
+    for (const item of group.items) {
       this.tripsEditorService.remove(item.tripToPlot);
     }
   }
