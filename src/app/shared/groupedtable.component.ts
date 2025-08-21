@@ -27,7 +27,7 @@ export interface TableGroup<T extends TableItem> {
   selector: "app-grouped-table",
   imports: [CommonModule],
   template: `
-    <div class="grouped-table">
+    <div class="grouped-table" [class.no-checkbox]="!renderCheckboxes()">
       <!-- Header -->
       <ng-container [ngTemplateOutlet]="headerTemplate()"></ng-container>
 
@@ -41,17 +41,19 @@ export interface TableGroup<T extends TableItem> {
               [class.expanded]="groupExpandedStates().get(group.id)"
             >
               <div class="group-header-row">
-                <div class="checkbox-column">
-                  <input
-                    type="checkbox"
-                    [checked]="getGroupCheckboxState(group.id).checked"
-                    [indeterminate]="
-                      getGroupCheckboxState(group.id).indeterminate
-                    "
-                    (change)="toggleGroupSelection(group.id, $event)"
-                    class="group-checkbox"
-                  />
-                </div>
+                @if (renderCheckboxes()) {
+                  <div class="checkbox-column">
+                    <input
+                      type="checkbox"
+                      [checked]="getGroupCheckboxState(group.id).checked"
+                      [indeterminate]="
+                        getGroupCheckboxState(group.id).indeterminate
+                      "
+                      (change)="toggleGroupSelection(group.id, $event)"
+                      class="group-checkbox"
+                    />
+                  </div>
+                }
                 <div class="label-column">
                   <ng-container
                     [ngTemplateOutlet]="groupHeaderTemplate()"
@@ -85,17 +87,19 @@ export interface TableGroup<T extends TableItem> {
                     [class.selected]="isItemSelected(item.id)"
                     [class.disabled]="item.disabled ?? false"
                   >
-                    <div class="checkbox-column">
-                      <input
-                        type="checkbox"
-                        [disabled]="item.disabled ?? false"
-                        [checked]="isItemSelected(item.id)"
-                        (change)="
-                          toggleItemSelection(item.id, group.id, $event)
-                        "
-                        class="item-checkbox"
-                      />
-                    </div>
+                    @if (renderCheckboxes()) {
+                      <div class="checkbox-column">
+                        <input
+                          type="checkbox"
+                          [disabled]="item.disabled ?? false"
+                          [checked]="isItemSelected(item.id)"
+                          (change)="
+                            toggleItemSelection(item.id, group.id, $event)
+                          "
+                          class="item-checkbox"
+                        />
+                      </div>
+                    }
                     <div class="item-content">
                       <ng-container
                         [ngTemplateOutlet]="itemTemplate()"
@@ -118,6 +122,7 @@ export interface TableGroup<T extends TableItem> {
 export class GroupedTableComponent<T extends TableItem> {
   groups = input.required<TableGroup<T>[]>();
   initialExpandedGroups = input<string[]>([]);
+  renderCheckboxes = input<boolean>(true);
 
   // Content projection for row template
   itemTemplate = contentChild.required<TemplateRef<any>>("itemTemplate");

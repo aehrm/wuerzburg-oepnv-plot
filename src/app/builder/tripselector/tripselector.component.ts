@@ -45,36 +45,26 @@ class TableStop implements TableItem {
     @if (loading()) {
       <div>Lade Stops...</div>
     } @else {
-      <app-grouped-table #groupedTable [groups]="tableGroups()">
-        <ng-template #headerTemplate>
-          <div class="table-header">
-            <div class="header-row">
-              <div class="checkbox-column">
-                <input
-                  type="checkbox"
-                  [checked]="groupedTable.headerCheckboxState().checked"
-                  [indeterminate]="
-                    groupedTable.headerCheckboxState().indeterminate
-                  "
-                  (change)="groupedTable.toggleSelectAll($event)"
-                  class="header-checkbox"
-                />
-              </div>
-              <div class="actions-column">
-                <button
-                  class="material-button"
-                  (click)="addSelectedTripsToEditor()"
-                  [disabled]="this.groupedTable().selectedItems().length == 0"
-                >
-                  add
-                </button>
-              </div>
-            </div>
-          </div>
-        </ng-template>
+      <app-grouped-table
+        #groupedTable
+        [groups]="tableGroups()"
+        [renderCheckboxes]="false"
+      >
+        <ng-template #headerTemplate> </ng-template>
 
         <ng-template #groupHeaderTemplate let-group>
-          {{ group.line.name }} nach {{ group.line.destinationDesc }}
+          <div class="trip-table-group-label">
+            {{ group.line.name }} nach {{ group.line.destinationDesc }}
+          </div>
+          <div class="trip-table-group-actions">
+            <button
+              class="material-button"
+              (click)="addTripGroupToEditor(group)"
+              [disabled]="group.disabled"
+            >
+              add
+            </button>
+          </div>
         </ng-template>
 
         <ng-template #itemTemplate let-item>
@@ -128,6 +118,7 @@ export class TripSelectorComponent {
           id: line.id,
           line: line,
           items: tableStops,
+          disabled: tableStops.every((s) => s.disabled),
         };
       });
   });
@@ -183,6 +174,12 @@ export class TripSelectorComponent {
     }
   }
 
+  addTripGroupToEditor(group: { items: TableStop[] }) {
+    for (const item of group.items) {
+      this.addTripToEditor(item.stop);
+    }
+  }
+
   addTripToEditor(stop: Stop): void {
     const trip = stop.trip;
     let selectedStopsOfTrip: Set<number>;
@@ -212,13 +209,5 @@ export class TripSelectorComponent {
       );
     }
     this.editorService.addToTripsEditor(trip, selectedStopsOfTrip);
-  }
-
-  addSelectedTripsToEditor(): void {
-    const selectedTrips = this.groupedTable().selectedItems();
-
-    for (const item of selectedTrips) {
-      this.addTripToEditor(item.stop);
-    }
   }
 }
