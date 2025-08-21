@@ -57,7 +57,7 @@ export class TimetablePlotComponent {
   layouter = inject(layoutService.PlotLayouterService);
   plotSelection: d3.Selection<any, unknown, any, unknown> = d3.select(".chart");
   width = signal(800);
-  height = signal(800);
+  height = signal(1500);
   plot_config = {
     margin: {
       left: 80,
